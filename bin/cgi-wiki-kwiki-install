@@ -1,0 +1,15 @@
+#!/usr/bin/perl -w
+use warnings;
+use strict;
+
+=head1 NAME
+
+cgi-wiki-kwiki-install
+
+=head1 DESCRIPTION
+
+does nothing. Yet.
+
+=cut
+
+die "Does nothing"

@@ -1,0 +1,12 @@
+[% INCLUDE header.tt %]
+
+<h1 align=center>[% site_name %] - Search Results</h1>
+
+<ul>
+  [% FOREACH hit = results %]
+    <li><a href="[% cgi_url %]?node=[% hit.url %]">[% hit.title %]</a></li>
+  [% END %]
+</ul>
+
+</body>
+</html>

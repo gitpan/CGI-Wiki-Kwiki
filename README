@@ -1,0 +1,39 @@
+h1. CGI::Wiki::Kwiki
+
+My objectives were:
+
+* Write a front-end to CGI::Wiki that actually exposes some of it's nicer features
+* Write a formatter module for CGI::Wiki that uses the CGI::Kwiki formatter. Not because it's good, but because of point 3..
+* Write an import script from CGI::Kwiki->CGI::Wiki so it's possible to move a kwiki to a wiki when you decide you need more scope.
+
+The files here basically do that with a few caveats.
+
+* The front end doesn't do diffs yet.
+* The import script (and front end) don't track the username/ip of the editing user/host/whatever.
+* There's no search.
+
+
+
+h2. Installation
+
+You'll need a database - mysql, postgresql or sqlite - and a user and/or password if those are required for authentication. CGI::Wiki comes with a little script to set up a database for use with it:
+
+$ cgi-wiki-setupdb --type <type> --name <name> --user <username> --pass <password>
+
+Take the wiki.cgi and the templates folder. Put them in a cgi folder somewhere. Then, tweak the wiki.cgi slightly so that the database settings and things are correct. Specifically, you need to make sure the db_type, db_name, db_user and db_pass are right to access the database you set up in the step above.
+
+If you want to import data from a Kwiki, you want to change the formatter in wiki.cgi to be 'Kwiki', or all your kwiki imported pages will be badly formatted. The CGI::Wiki formatting language is nicer, in my opinion, but automatically converting them was not in the scope of the original project - I'm working on maybe flagging the imported pages so you can use a different formatter for them only, or something. To import the data from a Kwiki store, use the 'cgi-wiki-kwiki-import' script - it should have been installed by the module installation process. Type 'perldoc cgi-wiki-kwiki-import' for details.
+
+Finally, take the wiki.cgi and the templates folder from the CGI::Wiki::Kwiki tarball, and put them in the cgi-bin of your web server. Point browser. Hopfully it'll work.
+
+
+
+h2. Outstanding bugs
+
+* no table/code/comment formatting in CGI::Wiki::Format::Kwiki
+* all backlinks are lower case
+* username of person who made changes not tracked
+* no diff ability
+* templates are ugly
+* no search
+* no useful tests

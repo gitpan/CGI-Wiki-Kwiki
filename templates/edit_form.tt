@@ -1,0 +1,22 @@
+[% INCLUDE header.tt %]
+
+<h1 align=center>[% site_name %] - Editing [% node_name %]</h1>
+
+<form action="[% cgi_url %]" method="POST">
+<textarea name="content" rows="10" cols="70">[% content %]</textarea>
+<br />
+<input type="hidden" name="node" value="[% node_name %]">
+<input type="hidden" name="checksum" value="[% checksum %]" />
+<input type="submit" name="preview" value="preview" />
+<input type="submit" name="commit" value="commit" />
+</form>
+
+<p><a href="[% cgi_url %]?node=[% node_param %]">Cancel edit</a></p>
+
+[% IF preview_html %]
+  <h2>Preview</h2>
+  [% preview_html %]
+[% END %]
+
+</body>
+</html>

@@ -1,0 +1,28 @@
+[% INCLUDE header.tt %]
+
+<h1 align=center>[% site_name %] - [% node_name %]</h1>
+
+[% content %]
+
+<h2>Changes in the last [% days %] days:</h2>
+
+<ul>
+[% FOREACH node = recent_changes %]
+  <li><a href="[% node.url %]">[% node.name %]</a>
+      [% node.last_modified %]
+      (<a href="[% node.url %];action=list_all_versions">see changes</a>)
+      [% IF node.comment %]
+        <b>[[% node.comment %]]</b>
+      [% END %]
+  </li>
+[% END %]
+</ul>
+
+<p>
+  [<a href="[% cgi_url %]?node=[% node_param %];action=edit">Edit this page</a>]
+  [<a href="[% cgi_url %]?node=[% node_param %];action=list_all_versions">Other versions</a>]
+  [<a href="[% cgi_url %]?node=[% node_param %];action=show_backlinks">Links to this page</a>]
+</p>
+
+</body>
+</html>
