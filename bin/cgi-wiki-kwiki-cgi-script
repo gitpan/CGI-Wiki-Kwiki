@@ -50,7 +50,7 @@ my %config = (
             macros              => {},
             node_prefix         => 'wiki.cgi?',
             node_suffix         => '',
-            edit_prefix         => 'wiki.cig?action=edit;id=',
+            edit_prefix         => 'wiki.cgi?action=edit;id=',
             edit_suffix         => '',
             munge_urls          => 0,
         ],          

@@ -355,7 +355,7 @@ use CGI::Wiki::Plugin::Diff;
 use Template;
 use Algorithm::Merge qw(merge);
 
-our $VERSION = '0.57';
+our $VERSION = '0.58';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -457,7 +457,7 @@ sub new {
 sub run {
     my ($self, %args) = @_;
     # arguments coming in from the CGI script won't be encoded correctly,
-    # but wen know what character set we _told_ the browser to use..
+    # but we know what character set we _told_ the browser to use..
     if ($CGI::Wiki::CAN_USE_ENCODE) {
         for (keys(%args)) {
           $args{$_} = Encode::decode($self->{charset}, $args{$_});
@@ -791,7 +791,9 @@ sub process_template {
     my $tt = Template->new( \%tt_conf );
     my $output = CGI::header( -cookie => $args{cookies}, -charset => $self->{charset} );
 
-    binmode STDOUT, ":encoding($self->{charset})";
+    if ($CGI::Wiki::CAN_USE_ENCODE) {
+        binmode STDOUT, ":encoding($self->{charset})";
+    }
 
     die $tt->error
         unless ( $tt->process( $template, \%tt_vars, \$output ) );
