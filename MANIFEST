@@ -38,6 +38,7 @@ t/07_diffs.t
 t/08_preferences.t
 t/09_create.t
 t/10_metadata_escape.t
+t/11_nonexistent_page.t
 t/lib/Local/Test/Formatter/Buffy.pm
 t/lib/Local/Test/Formatter/Pie.pm
 t/lib/Local/Test/Formatter/Pony.pm

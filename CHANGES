@@ -1,3 +1,6 @@
+2004/08/12 - (0.54)
+             Display home node if asked for nonexistent node.
+
 2004/07/23 - (0.53)
              Fixed bug - formatter name wasn't getting stored for single-
              formatter wikis.  Fixed other bug - HTML wasn't getting

@@ -344,7 +344,7 @@ use CGI::Wiki::Plugin::Diff;
 use Template;
 use Algorithm::Merge qw(merge);
 
-our $VERSION = '0.53';
+our $VERSION = '0.54';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -584,6 +584,10 @@ sub show_all_nodes {
 sub display_node {
     my ($self, $node, $version) = @_;
     $node ||= $self->{home_node};
+
+    unless ( $self->{wiki}->node_exists($node) ) {
+        $node = $self->{home_node};
+    }
 
     my %data = $self->{wiki}->retrieve_node($node);
 
