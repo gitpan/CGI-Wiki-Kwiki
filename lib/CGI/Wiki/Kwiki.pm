@@ -103,7 +103,7 @@ use Search::InvertedIndex;
 use CGI::Wiki::Search::SII;
 use Template;
 
-our $VERSION = 0.2;
+our $VERSION = '0.21';
 
 my $default_options = {
     db_type => 'MySQL',

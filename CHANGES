@@ -1,4 +1,7 @@
 2003/07/12 - Initial release
 
-2003/07/13 - Cleaned up some docs, added ability to revert to a previous
+2003/07/13 - (0.1) Cleaned up some docs, added ability to revert to a previous
              page version. Bumped to 0.1 because I'm in a good mood.
+
+2003/07/18 - (0.2) Added search, using Search::InvertedIndex
+             (0.21) ..and added the new template to the MANIFEST. Oops.

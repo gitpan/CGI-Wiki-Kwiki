@@ -13,6 +13,7 @@ templates/node.tt
 templates/node_history.tt
 templates/recent_changes.tt
 templates/search_results.tt
+templates/search_results.tt
 templates/site_index.tt
 templates/wanted_pages.tt
 wiki.cgi
