@@ -1,3 +1,7 @@
+2004/08/26 - (0.55)
+             Fixed "Wanted Pages" that was broken by the 0t54 updates -
+             thanks to Martin Frost for bug report.
+
 2004/08/12 - (0.54)
              Display home node if asked for nonexistent node.
 

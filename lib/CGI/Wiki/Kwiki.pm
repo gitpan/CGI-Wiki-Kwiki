@@ -344,7 +344,7 @@ use CGI::Wiki::Plugin::Diff;
 use Template;
 use Algorithm::Merge qw(merge);
 
-our $VERSION = '0.54';
+our $VERSION = '0.55';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -585,7 +585,7 @@ sub display_node {
     my ($self, $node, $version) = @_;
     $node ||= $self->{home_node};
 
-    unless ( $self->{wiki}->node_exists($node) ) {
+    unless ( $self->{wiki}->node_exists($node) || $node eq "WantedPages" ) {
         $node = $self->{home_node};
     }
 
