@@ -4,7 +4,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile
   (
    NAME        => 'CGI::Wiki::Kwiki',
-   VERSION     => '0.50',
+   VERSION     => '0.51',
    PL_FILES    => {},
    INSTALLDIRS => 'site',
    PREREQ_PM   => {

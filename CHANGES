@@ -1,3 +1,8 @@
+             **    Changed: footer.tt                                    **
+             **             navbar.tt                                    **
+
+             (0.51) Template tweaks to add more stylesheet hooks.
+
              ******************* NOTE TO UPGRADERS ************************
              **  If you are upgrading from a version earlier than 0.50,  **
              **  please make sure that you install the updated templates **

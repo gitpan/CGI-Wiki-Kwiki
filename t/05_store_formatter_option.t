@@ -33,6 +33,9 @@ if ( $@ ) {
                 node          => "New Node",
                 content       => "foo",
                 formatter     => "pony",
+                comment       => "", # avoid uninitialised value warning
+                edit_type     => "", # avoid uninitialised value warning
+                username      => "", # avoid uninitialised value warning
               );
 
     my %node_data = $wiki->{wiki}->retrieve_node( "New Node" );

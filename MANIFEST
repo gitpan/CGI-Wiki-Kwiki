@@ -19,6 +19,7 @@ templates/node_history.tt
 templates/preferences.tt
 templates/recent_changes.tt
 templates/search_results.tt
+templates/show_all_nodes.tt
 templates/site_index.tt
 templates/userstats.tt
 templates/wanted_pages.tt

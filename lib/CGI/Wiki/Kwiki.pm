@@ -344,7 +344,7 @@ use CGI::Wiki::Plugin::Diff;
 use Template;
 use Algorithm::Merge qw(merge);
 
-our $VERSION = '0.50';
+our $VERSION = '0.51';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -464,7 +464,7 @@ sub run {
                      formatter => $args{formatter},
                    };
 
-    if ($action) {
+    if (defined $action) {
 
         if ($action eq 'commit') {
             $self->commit_node($node, $args{content}, $args{checksum},
@@ -521,6 +521,8 @@ sub run {
 	    } else {
                 $self->show_preferences_form;
             }
+        } elsif ( $action eq 'show_all_nodes' ) {
+            $self->show_all_nodes;
         } else {
             die "Bad action\n";
         }
@@ -549,6 +551,32 @@ sub run {
     }
 }
 
+sub show_all_nodes {
+    my $self = shift;
+    my $wiki = $self->{wiki};
+    my @all = sort( $wiki->list_all_nodes );
+    my @nodes;
+    foreach my $name ( @all ) {
+        my %data = $wiki->retrieve_node( $name );
+        my $formatted_content = $wiki->format($data{content}, $data{metadata});
+        my $param = $wiki->formatter->node_name_to_node_param( $name );
+        my $url = $self->{cgi_url} . "?node=" . $param;
+        push @nodes, {
+                       name              => $name,
+                       formatted_content => $formatted_content,
+                       url               => $url,
+                     };
+    }
+
+    my %tt_vars = (
+                    nodes => \@nodes,
+                  );
+
+    $self->process_template(
+                             template => "show_all_nodes.tt",
+                             vars     => \%tt_vars,
+                           );
+}
 
 sub display_node {
     my ($self, $node, $version) = @_;
