@@ -6,11 +6,15 @@ use CGI::Wiki::Kwiki;
 
 my %config = (
 
+    db_type => 'MySQL',
+
     # these two will almost certainly need changing.
     db_name => 'cgi-wiki',
     db_user => 'root',
 
-    formatter_type => 'Default', # change to 'Kwiki' for Kwiki formatting.
+    formatters => {
+                    default => 'CGI::Wiki::Formatter::Default',
+                  }, # change to or add 'C::W::F::Kwiki' for Kwiki formatting.
     template_path => "./templates",
 );
 

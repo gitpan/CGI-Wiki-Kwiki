@@ -1,3 +1,12 @@
+2003/09/23 - (0.4) Added multiple formatter support.
+
+                         **** INCOMPATIBLE CHANGE ****
+
+             The way that you tell the module which formatters to use has
+             changed.  Please read the documentation in lib/CGI/Wiki/Kwiki.pm
+             before upgrading, as you will need to change any existing
+             wiki.cgi scripts.
+
 2003/09/22 - (0.31) Tidied up the tests - IO::Stringy no longer needed.
              (0.32) Fixed small bug previously masked by unnecessary
              'use CGI qw( :standard )' line in CGI::Wiki, removed in 0.48.

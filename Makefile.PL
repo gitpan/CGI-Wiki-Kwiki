@@ -1,7 +1,7 @@
     use ExtUtils::MakeMaker;
     WriteMakefile
       ('DISTNAME' => 'CGI-Wiki-Kwiki',
-       'VERSION' => '0.32',
+       'VERSION' => '0.4',
        'PL_FILES' => {},
        'PREREQ_PM' => {
 			'Getopt::Long' => '0',
@@ -12,6 +12,7 @@
 			'CGI' => '0',
 			'Test::More' => '0',
 			'CGI::Kwiki' => '0',
+			'Digest::MD5' => '0',
 			'CGI::Wiki' => '0.05',
 
 		      },

@@ -1,0 +1,16 @@
+[% IF formatter_labels.size > 1 %]
+  <table border="0">
+    <tr>
+      <td>
+        <strong>Formatter type for this node:</strong>
+      </td>
+      <td>
+        <select name="formatter">
+          [% FOREACH label = formatter_labels %]
+            <option [% IF formatter == label %] selected="1" [% END %] value="[% label %]">[% label %]</option>
+          [% END %]
+        </select>
+      </td>
+    </tr>
+  </table>
+[% END %]

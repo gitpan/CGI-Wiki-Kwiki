@@ -21,15 +21,27 @@ without you needing to dive into the code.
 
 Creates a new CGI::Wiki::Kwiki object. Expects some options, most have
 defaults, a few are required. Here's how you'd call the constructor -
-all values here are defaults, the values you must provide are marked.
+all values here (apart from C<formatters>) are defaults; the values
+you must provide are marked.
 
     my $wiki = CGI::Wiki::Kwiki->new(
         db_type => 'MySQL',
         db_user => undef,                     # required
         db_pass => '',
         db_name => undef,                     # required
-        formatter_type => 'Default',
-        allowed_tags => ['p','b','i','pre'],
+        formatters => {
+            documentation => 'CGI::Wiki::Formatter::Pod',
+            tests         => 'My::Own::PlainText::Formatter',
+            discussion    => [
+                               'CGI::Wiki::Formatter::UseMod',
+                               allowed_tags   => [ qw( p b i pre ) ],
+                               extended_links => 1,
+                               implicit_links => 0,
+                             ],
+            _DEFAULT      => [ # if upgrading from pre-0.4
+                               'CGI::Wiki::Formatter::UseMod;
+                             ],
+                      },                      # example only, not default
         site_name => 'CGI::Wiki::Kwiki site',
         admin_email => 'email@invalid',
         template_path => undef,               # required
@@ -38,16 +50,41 @@ all values here are defaults, the values you must provide are marked.
         search_map => './search_map',
     );
 
-the db_type and formatter_type refer to CGI::Wiki::Store::[type] and
-CGI::Wiki::Formatter::[type] classes respectively.
+The C<db_type> parameter refers to a CGI::Wiki::Store::[type] class.
+Valid values are 'MySQL', SQLite', etc: see the L<CGI::Wiki> man page
+and any other CGI::Wiki::Store classes you have on your
+system. C<db_user> and C<db_pass> will be used to access this
+database.
 
-Valid values for db_type are 'MySQL', SQLite', etc, see the CGI::Wiki man
-page and any other CGI::Wiki::Store classes you have on your system. db_user
-and db_pass will be used to access this database.
+C<formatters> should be a reference to a hash listing all the
+formatters that you wish to support.  Different wiki pages can be
+formatted with different formatters; this allows you to do things like
+have documentation pages written in POD, test suite pages written in
+plain text, and discussion pages written in your favourite Wiki
+syntax.  If this hash has more than one entry, its keys will be
+supplied in a drop-down list on every edit screen, and the selected
+one will be used when displaying that page.
 
-Likewise, valid values of formatter_type are 'Default', 'Kwiki', 'POD', etc.
-allowed_tags is a list of HTML that is allowed, and is passed to the
-formatter object. Not all formatter objects use this information.
+(If you I<do> wish to supply more than one entry to the hash, you will
+need L<CGI::Wiki::Formatter::Multiple> installed on your system.)
+
+Each value of the C<formatters> hash can be either a simple scalar
+giving the class of the required formatter, or an anonymous array
+whose first entry is the class name and whose other entries will be
+passed through to the formatter instantiation, parsed as a hash.  (See
+the C<discussion> formatter entry in the example code above if this
+sounds confusing.)
+
+B<Note:> Even if your C<formatters> hash has only one entry, you
+should make its key be meaningful, since it will be stored in the
+node's metadata and will appear in dropdowns if you ever decide to
+support another kind of formatter.
+
+B<Backwards Compatibility Note:> If you are upgrading from a version
+of L<CGI::Wiki::Kwiki> earlier than 0.4, and you have an existing wiki
+running on it, you should supply a C<_DEFAULT> entry in the
+C<formatters> hash so it knows what to do with nodes that have no
+formatter metadata stored.
 
 This method tries to create the store, formatter and wiki objects, and will
 die() if it has a problem. It is the calling script's responsibility to
@@ -62,7 +99,7 @@ header. Takes no options.
 
 =back
 
--head1 TODO
+=head1 TODO
 
 Things I still need to do
 
@@ -105,15 +142,19 @@ use Search::InvertedIndex;
 use CGI::Wiki::Search::SII;
 use Template;
 
-our $VERSION = '0.32';
+our $VERSION = '0.4';
 
 my $default_options = {
     db_type => 'MySQL',
     db_user => undef,
     db_pass => '',
     db_name => undef,
-    formatter_type => 'Default',
-    allowed_tags => ['p','b','i','pre'],
+    formatters => {
+                    default => [
+                                 'CGI::Wiki::Formatter::Default',
+                                 allowed_tags => [ qw( p b i pre ) ],
+                               ],
+                  },
     site_name => 'CGI::Wiki::Kwiki site',
     admin_email => 'email@invalid',
     template_path => undef,
@@ -153,19 +194,31 @@ sub new {
         dbpass => $self->{db_pass},
     ) or die "Couldn't create store of class $store_class";
 
-    my $formatter_class = "CGI::Wiki::Formatter::$self->{formatter_type}";
-    eval "require $formatter_class";
-    if ( $@ ) {
-        die "Couldn't 'use' $formatter_class: $@";
-    }
+    my %formatter_objects;
+    while ( my ($label, $formatter) = each %{ $self->{formatters} } ) {
+        my $formatter_class = ref $formatter ? shift @$formatter : $formatter;
+        eval "require $formatter_class";
+        if ( $@ ) {
+            die "Couldn't 'use' $formatter_class: $@";
+        }
+        my %formatter_args = ref $formatter ? @$formatter : ( );
+        $formatter_args{node_prefix} = $self->{cgi_path} . "?node=";
+        $formatter_args{edit_prefix} = $self->{cgi_path}."?action =edit;node=";
 
-    $self->{formatter} = $formatter_class->new(
-        node_prefix    => "$self->{cgi_path}?node=",
-        edit_prefix    => "$self->{cgi_path}?action=edit;node=",
-        allowed_tags   => $self->{allowed_tags},
-        extended_links => 1,
-        implicit_links => 1,
-    ) or die "Can't create formatter object of class $formatter_class";
+        my $formatter_obj = $formatter_class->new( %formatter_args )
+          or die "Can't create formatter object of class $formatter_class";
+
+        $formatter_objects{$label} = $formatter_obj;
+    }
+    if ( scalar keys %formatter_objects > 1 ) {
+        require CGI::Wiki::Formatter::Multiple;
+        $self->{formatter} =
+                     CGI::Wiki::Formatter::Multiple->new(%formatter_objects );
+    } else {
+        my ($label, $formatter_object) = each %formatter_objects;
+        $self->{formatter} = $formatter_object;
+        $self->{formatter_label} = $label;
+    }
 
     $self->{indexdb} = Search::InvertedIndex::DB::DB_File_SplitHash->new(
           -map_name  => $self->{search_map},
@@ -189,6 +242,7 @@ sub run {
     my $metadata = { username  => $args{username},
                      comment   => $args{comment},
                      edit_type => $args{edit_type},
+                     formatter => $args{formatter},
                    };
 
     if ($action) {
@@ -268,8 +322,7 @@ sub display_node {
 
     my %node_data = $self->{wiki}->retrieve_node( %criteria );
     my $raw = $node_data{content};
-    my $content = $self->{wiki}->format($raw);
-    # TODO choose formatter based on node metadata
+    my $content = $self->{wiki}->format($raw, $node_data{metadata});
     
     my %tt_vars = (
         content    => $content,
@@ -318,10 +371,13 @@ sub preview_node {
     my ($self, $node, $content, $checksum, $metadata) = @_;
 
     if ( $self->{wiki}->verify_checksum( $node, $checksum ) ) {
+        my @formatter_labels = sort keys %{ $self->{formatters} };
         my %tt_vars = (
             content      => CGI::escapeHTML($content),
-            preview_html => $self->{wiki}->format($content),
+            preview_html => $self->{wiki}->format($content,
+                            { formatter => [ $metadata->{formatter} ] } ),
             checksum     => CGI::escapeHTML($checksum),
+            formatter_labels => \@formatter_labels,
             map { $_ => CGI::escapeHTML($metadata->{$_}||"") } keys %$metadata,
         );
 
@@ -330,10 +386,13 @@ sub preview_node {
     } else {
         my %node_data = $self->{wiki}->retrieve_node($node);
         my ( $stored, $checksum ) = @node_data{qw( content checksum )};
+        my @formatter_labels = sort keys %{ $self->{formatters} };
+
         my %tt_vars = (
             checksum    => CGI::escapeHTML($checksum),
             new_content => CGI::escapeHTML($content),
             stored      => CGI::escapeHTML($stored),
+            formatter_labels => \@formatter_labels,
             map { $_ => CGI::escapeHTML($metadata->{$_}||"") } keys %$metadata,
         );
         $self->process_template( "edit_conflict.tt", $node, \%tt_vars );
@@ -354,11 +413,15 @@ sub edit_node {
     my %node_data = $self->{wiki}->retrieve_node( %criteria );
     my ( $content, $checksum ) = @node_data{qw( content checksum )};
 
+    my @formatter_labels = sort keys %{ $self->{formatters} };
+
     my %tt_vars = (
-        content  => CGI::escapeHTML($content),
-        checksum => CGI::escapeHTML($checksum),
-        version  => $version,
-    );
+        content          => CGI::escapeHTML($content),
+        checksum         => CGI::escapeHTML($checksum),
+        version          => $version,
+        formatter_labels => \@formatter_labels,
+	formatter        => CGI::escapeHTML($data{metadata}{formatter}[0]||""),
+                  );
 
     $self->process_template( "edit_form.tt", $node, \%tt_vars );
 }

@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name: CGI-Wiki-Kwiki
-version: 0.32
+version: 0.4
 license: perl
 distribution_type: module
 requires:
@@ -16,11 +16,13 @@ requires:
 recommends:
   DBD::SQLite: 0
   DBI: 0
+  Test::HTML::Content: 0
 build_requires:
+  Digest::MD5: 0
   Test::More: 0
 conflicts: {}
 provides:
   CGI::Wiki::Kwiki:
     file: lib/CGI/Wiki/Kwiki.pm
-    version: 0.32
+    version: 0.4
 generated_by: Module::Build version 0.19
