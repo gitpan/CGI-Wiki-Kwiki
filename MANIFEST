@@ -3,6 +3,7 @@ Makefile.PL
 lib/CGI/Wiki/Kwiki.pm
 MANIFEST
 README
+CHANGES
 templates/backlink_results.tt
 templates/edit_conflict.tt
 templates/edit_form.tt

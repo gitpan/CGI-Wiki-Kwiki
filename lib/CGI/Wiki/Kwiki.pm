@@ -9,13 +9,13 @@ CGI::Wiki::Kwiki
 A simple front-end to CGI::Wiki, including import capability from CGI::Kwiki,
 designed as a transition module from a CGI::Kwiki wiki to something a little
 more powerful. It provides most of the methods you'd expect from a wiki -
-change control and listing, conflicty management, database backends, etc.
+change control and listing, conflict management, database backends, etc.
 
 =head1 METHODS
 
 =over 4
 
-=item new
+=item B<new>
 
 Creates a new CGI::Wiki::Kwiki object. Expects some options, most have defaults,
 a few are required. Here's how you'd call the constructor - all values here are
@@ -35,23 +35,27 @@ defaults, the values you must provide are marked.
         cgi_path => CGI::url(),
     );
 
-the db_type and formatter_type refer to CGI::Wiki::Store::[type] and CGI::Wiki::Formatter::[type] classes respectively.
+the db_type and formatter_type refer to CGI::Wiki::Store::[type] and
+CGI::Wiki::Formatter::[type] classes respectively.
 
-Valid values for db_type are 'MySQL', SQLite', etc, see the CGI::Wiki man page and any other CGI::Wiki::Store classes you have on your system. db_user and db_pass will be used to access this database.
+Valid values for db_type are 'MySQL', SQLite', etc, see the CGI::Wiki man
+page and any other CGI::Wiki::Store classes you have on your system. db_user
+and db_pass will be used to access this database.
 
-Likewise, valid values of formatter_type are 'Default', 'Kwiki', 'POD', etc. allowed_tags is a list of HTML that is allowed, and is passed to the formatter object. Not all formatter objects use this information.
+Likewise, valid values of formatter_type are 'Default', 'Kwiki', 'POD', etc.
+allowed_tags is a list of HTML that is allowed, and is passed to the
+formatter object. Not all formatter objects use this information.
 
 This method tries to create the store, formatter and wiki objects, and will
-die() if it has a problem. It is the calling script's responsibility to catch
-any exceptions and tell the user.
+die() if it has a problem. It is the calling script's responsibility to
+catch any exceptions and tell the user.
 
-=item run
+=item B<run>
 
 Runs the wiki object, and outputs to STDOUT the result, including the CGI
 header. Takes no options.
 
     $wiki->run();
-
 
 =back
 
@@ -84,7 +88,7 @@ use CGI;
 use CGI::Wiki;
 use Template;
 
-our $VERSION = 0.01;
+our $VERSION = 0.1;
 
 my $default_options = {
     db_type => 'MySQL',
@@ -166,7 +170,10 @@ sub run {
             $self->preview_node($node, $args{content}, $args{checksum});
     
         } elsif ($action eq 'edit') {
-            $self->edit_node($node);
+            $self->edit_node($node, $args{version});
+    
+        } elsif ($action eq 'revert') {
+            $self->revert_node($node, $args{version});
     
         } elsif ($action eq 'index') {
             my @nodes = $self->{wiki}->list_all_nodes();
@@ -216,7 +223,8 @@ sub display_node {
     my %tt_vars = (
         content    => $content,
         node_name  => CGI::escapeHTML($node),
-        node_param => CGI::escape($node)
+        node_param => CGI::escape($node),
+        version    => $version,
     );
 
     if ( $node eq "RecentChanges" ) {
@@ -260,7 +268,7 @@ sub preview_node {
         my %tt_vars = (
             content      => CGI::escapeHTML($content),
             preview_html => $self->{wiki}->format($content),
-            checksum     => CGI::escapeHTML($checksum)
+            checksum     => CGI::escapeHTML($checksum),
         );
 
         $self->process_template( "edit_form.tt", $node, \%tt_vars );
@@ -271,19 +279,30 @@ sub preview_node {
         my %tt_vars = (
             checksum    => CGI::escapeHTML($checksum),
             new_content => CGI::escapeHTML($content),
-            stored      => CGI::escapeHTML($stored)
+            stored      => CGI::escapeHTML($stored),
         );
         $self->process_template( "edit_conflict.tt", $node, \%tt_vars );
     }
 }
 
 sub edit_node {
-    my ($self, $node) = @_;
-    my %node_data = $self->{wiki}->retrieve_node($node);
+    my ($self, $node, $version) = @_;
+
+    my %data = $self->{wiki}->retrieve_node($node);
+
+    my $current_version = $data{version};
+    undef $version if ($version && $version == $current_version);
+
+    my %criteria = ( name => $node );
+    $criteria{version} = $version if $version;
+
+    my %node_data = $self->{wiki}->retrieve_node( %criteria );
     my ( $content, $checksum ) = @node_data{qw( content checksum )};
+
     my %tt_vars = (
         content  => CGI::escapeHTML($content),
-        checksum => CGI::escapeHTML($checksum)
+        checksum => CGI::escapeHTML($checksum),
+        version  => $version,
     );
 
     $self->process_template( "edit_form.tt", $node, \%tt_vars );
@@ -339,6 +358,22 @@ sub commit_node {
             stored      => CGI::escapeHTML($stored)
         );
         $self->process_template( "edit_conflict.tt", $node, \%tt_vars );
+    }
+}
+
+sub revert_node {
+    my ($self, $node, $version) = @_;
+
+    my %node_data = $self->{wiki}->retrieve_node( name=>$node, version=>$version );
+    my %current_node = $self->{wiki}->retrieve_node( $node );
+
+    my $written = $self->{wiki}->write_node( $node, $node_data{content}, $current_node{checksum} );
+
+    if ($written) {
+        $self->display_node($node);
+
+    } else {
+        die "Can't revert node for some reason.\n";
     }
 }
 
@@ -408,4 +443,3 @@ sub show_backlinks {
 
     $self->process_template("backlink_results.tt", $node, \%tt_vars);
 }
-

@@ -30,7 +30,6 @@ Finally, take the wiki.cgi and the templates folder from the CGI::Wiki::Kwiki ta
 
 h2. Outstanding bugs
 
-* no table/code/comment formatting in CGI::Wiki::Format::Kwiki
 * all backlinks are lower case
 * username of person who made changes not tracked
 * no diff ability

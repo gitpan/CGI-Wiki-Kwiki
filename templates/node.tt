@@ -5,7 +5,12 @@
 [% content %]
 
 <p>
-  [<a href="[% cgi_url %]?node=[% node_param %];action=edit">Edit this page</a>]
+  [% IF version %]
+    [<a href="[% cgi_url %]?node=[% node_param %];action=edit">Edit current version</a>]
+    [<a href="[% cgi_url %]?node=[% node_param %];action=revert;version=[% version %]">Revert to this version</a>]
+  [% ELSE %]
+    [<a href="[% cgi_url %]?node=[% node_param %];action=edit">Edit this page</a>]
+  [% END %]
   [<a href="[% cgi_url %]?node=[% node_param %];action=list_all_versions">Other versions</a>]
   [<a href="[% cgi_url %]?node=[% node_param %];action=show_backlinks">Links to this page</a>]
 </p>
