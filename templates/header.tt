@@ -4,14 +4,17 @@
 <head>
   <title>[% node_name %] - [% site_name %]</title>
 
-  <style>
-    body {
-        color:              #000000;
-        background-color:   #FFFFFF;
-    }
-    
-  </style>
-  
+  [% IF stylesheet_url %]
+    <link rel="stylesheet" href="[% stylesheet_url %]" type="text/css">
+  [% ELSE %]
+    <style>
+      body {
+          color:              #000000;
+          background-color:   #FFFFFF;
+      }
+    </style>
+  [% END %]
+
 </head>
 <body>
 

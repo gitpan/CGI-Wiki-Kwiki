@@ -45,6 +45,7 @@ you must provide are marked.
         site_name => 'CGI::Wiki::Kwiki site',
         admin_email => 'email@invalid',
         template_path => undef,               # required
+        stylesheet_url => "",
         home_node => 'HomePage',
         cgi_path => CGI::url(),
         search_map => './search_map',
@@ -152,7 +153,7 @@ use Search::InvertedIndex;
 use CGI::Wiki::Search::SII;
 use Template;
 
-our $VERSION = '0.41';
+our $VERSION = '0.42';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -168,6 +169,7 @@ my $default_options = {
     site_name => 'CGI::Wiki::Kwiki site',
     admin_email => 'email@invalid',
     template_path => undef,
+    stylesheet_url => "",
     home_node => 'HomePage',
     cgi_path => CGI::url(),
     search_map => "./search_map",
@@ -213,7 +215,7 @@ sub new {
         }
         my %formatter_args = ref $formatter ? @$formatter : ( );
         $formatter_args{node_prefix} = $self->{cgi_path} . "?node=";
-        $formatter_args{edit_prefix} = $self->{cgi_path}."?action =edit;node=";
+        $formatter_args{edit_prefix} = $self->{cgi_path}."?action=edit;node=";
 
         my $formatter_obj = $formatter_class->new( %formatter_args )
           or die "Can't create formatter object of class $formatter_class";
@@ -272,7 +274,7 @@ sub run {
             $self->revert_node($node, $args{version});
     
         } elsif ($action eq 'index') {
-            my @nodes = $self->{wiki}->list_all_nodes();
+            my @nodes = sort $self->{wiki}->list_all_nodes();
             $self->process_template( "site_index.tt", "index", { nodes => \@nodes } );
     
         } elsif ($action eq 'show_backlinks') {
@@ -450,7 +452,8 @@ sub process_template {
         description   => "",
         keywords      => "",
         home_link     => $self->{cgi_path},
-        home_name     => "Home"
+        home_name     => "Home",
+        stylesheet_url => $self->{stylesheet_url},
     );
 
     if ($node) {

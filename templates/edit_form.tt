@@ -3,7 +3,7 @@
 <h1 align=center>[% site_name %] - Editing [% node_name %]</h1>
 
 <form action="[% cgi_url %]" method="POST">
-<textarea name="content" rows="10" cols="70">[% content %]</textarea>
+<textarea name="content" rows="30" cols="70">[% content %]</textarea>
 <br />
 [% INCLUDE change_info_boxes.tt %]
 [% INCLUDE formatter_box.tt %]

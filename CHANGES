@@ -1,3 +1,9 @@
+2003/10/03 - (0.42) Fixed edit link for nonexistent nodes.  Made "all pages"
+             output be in alphabetical order.  Added some stylesheet hooks
+             to the template.  Removed the "revert to this version" link
+             from the node.tt template.  Made the content box on the edit
+             form be a more sensible size.
+
 2003/09/25 - (0.41) Fix for test failures - we skip the ones that require
              CGI::Wiki::Formatter::Multiple if it's not installed (ta Jost).
 

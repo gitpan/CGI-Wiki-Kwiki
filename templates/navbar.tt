@@ -1,9 +1,9 @@
 <p align="right">
-  [<a href="[% cgi_url %]?node=RecentChanges">Recent Changes</a>]
-  [<a href="[% cgi_url %]?action=random">Random Page</a>]
-  [<a href="[% cgi_url %]?node=WantedPages">Wanted pages</a>]
-  [<a href="[% cgi_url %]?action=index">All Pages</a>]
-  [<a href="[% home_link %]">[% home_name %]</a>]
+  [<a class="menu" href="[% cgi_url %]?node=RecentChanges">Recent Changes</a>]
+  [<a class="menu" href="[% cgi_url %]?action=random">Random Page</a>]
+  [<a class="menu" href="[% cgi_url %]?node=WantedPages">Wanted pages</a>]
+  [<a class="menu" href="[% cgi_url %]?action=index">All Pages</a>]
+  [<a class="menu" href="[% home_link %]">[% home_name %]</a>]
 </p>
 
 <form method=get action="[% cgi_url %]">

@@ -4,6 +4,7 @@ use warnings;
 use CGI;
 use CGI::Wiki::Kwiki;
 
+# See 'perldoc CGI::Wiki::Kwiki' to find out what options you can set here.
 my %config = (
 
     db_type => 'MySQL',
