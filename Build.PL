@@ -5,13 +5,14 @@ my $build = Module::Build->new(
     requires => {
         'perl'        => '5.6.0',
         'CGI'         => 0,
-        'CGI::Wiki'   => 0,
+        'CGI::Wiki'   => '0.05',
         'CGI::Kwiki'  => 0,
         'CGI::Wiki::Formatter::Kwiki' => 0,
         'Template' => 0,
         'Test::Simple' => 0,
         'Getopt::Long' => 0,
         'Time::Piece' => 0,
+        'Search::InvertedIndex' => 0,
     },
     create_makefile_pl => 'traditional',
      script_files => [

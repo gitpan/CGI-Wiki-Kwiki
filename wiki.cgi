@@ -22,6 +22,7 @@ my %vars = CGI::Vars();
 # certain actions are the result of button presses.
 $vars{action} = 'commit' if $vars{commit};
 $vars{action} = 'preview' if $vars{preview};
+$vars{action} = 'search' if $vars{search};
 
 # It's possible to pass the node name in more than one way.
 $vars{node} ||= CGI::param('keywords');

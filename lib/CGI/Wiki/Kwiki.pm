@@ -33,6 +33,7 @@ defaults, the values you must provide are marked.
         template_path => undef,               # required
         home_node => 'HomePage',
         cgi_path => CGI::url(),
+        search_map => './search_map',
     );
 
 the db_type and formatter_type refer to CGI::Wiki::Store::[type] and
@@ -56,6 +57,18 @@ Runs the wiki object, and outputs to STDOUT the result, including the CGI
 header. Takes no options.
 
     $wiki->run();
+
+=back
+
+-head1 TODO
+
+Things I still need to do
+
+=over 4
+
+=item Polish templates
+
+=item Import script should catch case-sensitive dupes better
 
 =back
 
@@ -86,9 +99,11 @@ use strict;
 use warnings;
 use CGI;
 use CGI::Wiki;
+use Search::InvertedIndex;
+use CGI::Wiki::Search::SII;
 use Template;
 
-our $VERSION = 0.1;
+our $VERSION = 0.2;
 
 my $default_options = {
     db_type => 'MySQL',
@@ -102,6 +117,7 @@ my $default_options = {
     template_path => undef,
     home_node => 'HomePage',
     cgi_path => CGI::url(),
+    search_map => "./search_map",
 };
 
 sub new {
@@ -149,9 +165,15 @@ sub new {
         implicit_links => 1,
     ) or die "Can't create formatter object of class $formatter_class";
 
+    $self->{indexdb} = Search::InvertedIndex::DB::DB_File_SplitHash->new(
+          -map_name  => $self->{search_map},
+          -lock_mode => "EX" );
+    $self->{search} = CGI::Wiki::Search::SII->new(indexdb => $self->{indexdb});
+
     $self->{wiki} = CGI::Wiki->new(
         store     => $self->{store},
         formatter => $self->{formatter},
+        search    => $self->{search},
     ) or die "Can't create CGI::Wiki object";
 
     return $self;
@@ -189,12 +211,28 @@ sub run {
     
         } elsif ($action eq 'list_all_versions') {
             $self->list_all_versions($node);
+
+        } elsif ($action eq 'search') {
+            $self->search($args{search});
+
+        } elsif ($action eq 'search_index') {
+            $|++;
+            print "Content-type: text/plain\n\n";
+            for ($self->{wiki}->list_all_nodes()) {            
+                print "Indexing $_\n";
+                my $node = $self->{wiki}->retrieve_node($_);
+                $self->{wiki}->search_obj()->index_node($_, $node);
+            }
+            print "\n\nindexed all nodes\n";
+            exit 0;
+        } else {
+            die "Bad action\n";
         }
 
     } else {
 
         if ($args{diffversion}) {
-            die "diff not implemented yet";
+            die "diff not implemented yet\n";
         } else {
             $self->display_node($node, $args{version});
         }
@@ -442,4 +480,21 @@ sub show_backlinks {
                     not_editable => 1 );
 
     $self->process_template("backlink_results.tt", $node, \%tt_vars);
+}
+
+sub search {
+    my ($self, $search) = @_;
+
+    my %results = $self->{wiki}->search_nodes($search);
+    my @results = map { $_ }
+        ( sort { $results{$a} <=> $results{$b} } keys(%results) );
+
+    my %tt_vars = ( results      => \@results,
+                    num_results  => scalar @results,
+                    search => $search,
+                    not_editable => 1 );
+
+    $self->process_template("search_results.tt", undef, \%tt_vars);
+    
+    
 }

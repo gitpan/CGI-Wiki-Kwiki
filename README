@@ -10,7 +10,6 @@ The files here basically do that with a few caveats.
 
 * The front end doesn't do diffs yet.
 * The import script (and front end) don't track the username/ip of the editing user/host/whatever.
-* There's no search.
 
 
 
@@ -34,5 +33,4 @@ h2. Outstanding bugs
 * username of person who made changes not tracked
 * no diff ability
 * templates are ugly
-* no search
 * no useful tests
