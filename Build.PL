@@ -14,6 +14,7 @@ my $build = Module::Build->new(
         'Search::InvertedIndex' => 0,
     },
     recommends => {
+        'CGI::Wiki::Formatter::Multiple' => 0,# if you want multiple formatters
         'DBD::SQLite'         => 0, # for testing
         'DBI'                 => 0, # for testing
         'Test::HTML::Content' => 0, # for testing

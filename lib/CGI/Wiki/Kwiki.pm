@@ -41,7 +41,7 @@ you must provide are marked.
             _DEFAULT      => [ # if upgrading from pre-0.4
                                'CGI::Wiki::Formatter::UseMod;
                              ],
-                      },                      # example only, not default
+                      },                  # example only, not default
         site_name => 'CGI::Wiki::Kwiki site',
         admin_email => 'email@invalid',
         template_path => undef,               # required
@@ -113,7 +113,17 @@ Things I still need to do
 
 =head1 SEE ALSO
 
+=over
+
+=item *
+
 L<CGI::Wiki>
+
+=item *
+
+L<http://the.earth.li/~kake/cgi-bin/london.crafts/wiki.cgi> - a wiki for a local crafts group, running on CGI::Wiki::Kwiki
+
+=back
 
 =head1 AUTHOR
 
@@ -142,7 +152,7 @@ use Search::InvertedIndex;
 use CGI::Wiki::Search::SII;
 use Template;
 
-our $VERSION = '0.4';
+our $VERSION = '0.41';
 
 my $default_options = {
     db_type => 'MySQL',

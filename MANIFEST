@@ -28,6 +28,7 @@ t/02_userstats.t
 t/03_multiple_formatters.t
 t/04_multiple_formatter_options.t
 t/05_store_formatter_option.t
+t/06_single_formatter.t
 t/lib/Local/Test/Formatter/Buffy.pm
 t/lib/Local/Test/Formatter/Pie.pm
 t/lib/Local/Test/Formatter/Pony.pm

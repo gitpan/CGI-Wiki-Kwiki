@@ -6,10 +6,10 @@ use CGI::Wiki::Setup::SQLite;
 
 use lib "./t/lib"; # for test formatters
 
-eval { require DBD::SQLite; };
+eval { require DBD::SQLite; require CGI::Wiki::Formatter::Multiple; };
 
 if ( $@ ) {
-    plan skip_all => "DBD::SQLite not installed";
+    plan skip_all => "Either DBD::SQLite or CGI::Wiki::Formatter::Multiple not installed";
 } else {
     plan tests => 1;
 

@@ -1,3 +1,6 @@
+2003/09/25 - (0.41) Fix for test failures - we skip the ones that require
+             CGI::Wiki::Formatter::Multiple if it's not installed (ta Jost).
+
 2003/09/23 - (0.4) Added multiple formatter support.
 
                          **** INCOMPATIBLE CHANGE ****

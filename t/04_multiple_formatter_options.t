@@ -12,7 +12,7 @@ eval { require Test::HTML::Content; require DBD::SQLite; };
 if ( $@ ) {
     plan skip_all => "Either Test::HTML::Content or DBD::SQLite not installed";
 } else {
-    plan tests => 7;
+    plan tests => 6;
 
     # Instantiate wiki.
     CGI::Wiki::Setup::SQLite::cleardb( "./t/wiki.db" );
@@ -69,26 +69,5 @@ if ( $@ ) {
     Test::HTML::Content::tag_ok( $output, "option",
                                  { value => "pie", selected => "1" },
                                  "pie formatter selected when appropriate" );
-
-    # Now test that the formatter type option isn't offered if there is
-    # only one available formatter.
-    $wiki = CGI::Wiki::Kwiki->new(
-        db_type       => "SQLite",
-        db_name       => "./t/wiki.db",
-        db_user       => 'foo', # this should be unnecessary!  FIXME
-        formatters    => {
-                           default => "Local::Test::Formatter::Pony",
-                         },
-        template_path => './templates',
-        search_map    => 't/search_map_2', # different map or SII will complain
-    );
-
-    $output = $wiki->run(
-                             return_output => 1,
-                             action        => "edit",
-                             node          => "New Node",
-                           );
-    Test::HTML::Content::no_tag( $output, "select", { name => "formatter" },
-          "no formatter select offered on edit page if only one formatter" );
 
 }
