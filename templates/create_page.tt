@@ -1,6 +1,9 @@
-[% INCLUDE header.tt %]
+[%# This page is for creating a new, blank wiki page.
+-%]
 
-<h1 align=center>[% site_name %] - Create a New Page</h1>
+[%- INCLUDE header.tt %]
+
+<h1>[% site_name %] - Create a New Page</h1>
 
 <form method="GET" action="[% cgi_url %]">
   <input type="hidden" name="action" value="create" />

@@ -1,6 +1,9 @@
-[% INCLUDE header.tt node_name = "Recent Changes" %]
+[%# The recent changes page
+-%]
 
-<h1 align=center>[% site_name %] - Recent Changes</h1>
+[%- INCLUDE header.tt node_name = "Recent Changes" %]
+
+<h1>[% site_name %] - Recent Changes</h1>
 
 [% content %]
 

@@ -1,6 +1,10 @@
-[% INCLUDE header.tt %]
+[%# This displays the 'wanted pages' - all pages linked to, but that don't
+    actually exist.
+-%]
 
-<h1 align=center>[% site_name %] - [% node_name %]</h1>
+[%- INCLUDE header.tt %]
+
+<h1>[% site_name %] - [% node_name %]</h1>
 
 [% content %]
 

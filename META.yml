@@ -1,29 +1,30 @@
 --- #YAML:1.0
 name: CGI-Wiki-Kwiki
-version: 0.55
+version: 0.56
+author: ~
+abstract: An instant wiki built on CGI::Wiki.
 license: perl
-distribution_type: module
 requires:
   Algorithm::Merge: 0
   CGI: 0
-  CGI::Wiki: 0.52
+  CGI::Wiki: 0.56
+  CGI::Wiki::Formatter::UseMod: 0
   CGI::Wiki::Plugin::Diff: 0.07
+  CGI::Wiki::Search::DB: 0
   Getopt::Long: 0
-  Search::InvertedIndex: 0
   Template: 0
   Time::Piece: 0
   perl: 5.6.0
 recommends:
-  CGI::Wiki::Formatter::Multiple: 0
+  CGI::Wiki::Formatter::Multiple: 0.02
   DBD::SQLite: 0
   DBI: 0
   Test::HTML::Content: 0
 build_requires:
   Digest::MD5: 0
   Test::More: 0
-conflicts: {}
 provides:
   CGI::Wiki::Kwiki:
     file: lib/CGI/Wiki/Kwiki.pm
-    version: 0.55
-generated_by: Module::Build version 0.20
+    version: 0.56
+generated_by: Module::Build version 0.25

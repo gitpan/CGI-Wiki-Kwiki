@@ -1,3 +1,7 @@
+[%# The main navigation bar at the top of every page.
+    Included from header.tt.
+-%]
+
 <div class="navbar">
   <div class="navbar_item">
     <a href="[% cgi_url %]?node=RecentChanges">Recent Changes</a>

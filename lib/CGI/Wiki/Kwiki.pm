@@ -13,7 +13,18 @@ more of CGI::Wiki's capabilities, and so on.  It uses the L<Template>
 Toolkit to allow quick and easy customisation of your wiki's look
 without you needing to dive into the code.
 
-=head1 SYNOPSIS
+=head1 INSTALLATION
+
+The distribution ships with and installs a script called
+L<cgi-wiki-kwiki-install>. Create an empty directory somewhere that your
+web server can see, and run the script. It will set up a SQLite
+database, install the default templates into the current directory,
+and create a cgi script to run the wiki. You now have a wiki - edit
+wiki.cgi to change any of the default options, and you're done.
+
+=head1 MORE DETAILS
+
+wiki.cgi will look something like this:
 
   #!/usr/bin/perl -w
   use strict;
@@ -129,6 +140,7 @@ you must provide are marked.
         cgi_path => CGI::url(),
         search_map => './search_map',
         prefs_expire => '+1M',    # passed to CGI::Cookie; see its docs
+        charset => 'iso-8859-1', # characterset for the wiki
     );
 
 The C<db_type> parameter refers to a CGI::Wiki::Store::[type] class.
@@ -338,13 +350,12 @@ use warnings;
 use CGI;
 use CGI::Cookie;
 use CGI::Wiki;
-use Search::InvertedIndex;
-use CGI::Wiki::Search::SII;
+use CGI::Wiki::Search::DB;
 use CGI::Wiki::Plugin::Diff;
 use Template;
 use Algorithm::Merge qw(merge);
 
-our $VERSION = '0.55';
+our $VERSION = '0.56';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -366,6 +377,7 @@ my $default_options = {
     cgi_path => CGI::url(),
     search_map => "./search_map",
     prefs_expire => '+1M',
+    charset => 'iso-8859-1',
 };
 
 our $diff_plugin = CGI::Wiki::Plugin::Diff->new;
@@ -400,6 +412,7 @@ sub new {
         dbuser => $self->{db_user},
         dbpass => $self->{db_pass},
         dbhost => $self->{db_host},
+        charset => $self->{charset},
     ) or die "Couldn't create store of class $store_class";
 
     my %formatter_objects;
@@ -410,8 +423,8 @@ sub new {
             die "Couldn't 'use' $formatter_class: $@";
         }
         my %formatter_args = ref $formatter ? @$formatter : ( );
-        $formatter_args{node_prefix} = $self->{cgi_path} . "?node=";
-        $formatter_args{edit_prefix} = $self->{cgi_path}."?action=edit;node=";
+        $formatter_args{node_prefix} ||= $self->{cgi_path} . "?node=";
+        $formatter_args{edit_prefix} ||= $self->{cgi_path}."?action=edit;node=";
 
         my $formatter_obj = $formatter_class->new( %formatter_args )
           or die "Can't create formatter object of class $formatter_class";
@@ -428,10 +441,7 @@ sub new {
         $self->{formatter_label} = $label;
     }
 
-    $self->{indexdb} = Search::InvertedIndex::DB::DB_File_SplitHash->new(
-          -map_name  => $self->{search_map},
-          -lock_mode => "EX" );
-    $self->{search} = CGI::Wiki::Search::SII->new(indexdb => $self->{indexdb});
+    $self->{search} = CGI::Wiki::Search::DB->new( store => $self->{store} );
 
     $self->{wiki} = CGI::Wiki->new(
         store     => $self->{store},
@@ -446,6 +456,12 @@ sub new {
 
 sub run {
     my ($self, %args) = @_;
+    # arguments coming in from the CGI script won't be encoded correctly,
+    # but wen know what character set we _told_ the browser to use..
+    for (keys(%args)) {
+      $args{$_} = Encode::decode($self->{charset}, $args{$_});
+    }
+
     $self->{return_tt_vars} = delete $args{return_tt_vars} || 0;
     $self->{return_output}  = delete $args{return_output}  || 0;
 
@@ -530,7 +546,7 @@ sub run {
             die "Bad action\n";
         }
 
-    } elsif ( $node eq "RecentChanges" ) {
+    } elsif ( defined($node) and $node eq "RecentChanges" ) {
         $self->display_recent_changes;
     } else {
 
@@ -673,8 +689,7 @@ sub preview_node {
         my @formatter_labels = sort keys %{ $self->{formatters} };
         my %tt_vars = (
             content      => CGI::escapeHTML($content),
-            preview_html => $self->{wiki}->format($content,
-                            { formatter => [ $metadata->{formatter} ] } ),
+            preview_html => $self->{wiki}->format($content, $metadata),
             checksum     => CGI::escapeHTML($checksum),
             formatter_labels => \@formatter_labels,
             map { $_ => CGI::escapeHTML($metadata->{$_}||"") } keys %$metadata,
@@ -756,6 +771,7 @@ sub process_template {
         home_name      => "Home",
         stylesheet_url => $self->{stylesheet_url},
         dist_version   => "$VERSION",
+        charset        => $self->{charset},
     );
 
     if ($node) {
@@ -771,7 +787,9 @@ sub process_template {
 
     # Create Template object, print CGI header, process template.
     my $tt = Template->new( \%tt_conf );
-    my $output = CGI::header( -cookie => $args{cookies} );
+    my $output = CGI::header( -cookie => $args{cookies}, -charset => $self->{charset} );
+
+    binmode STDOUT, ":encoding($self->{charset})";
 
     die $tt->error
         unless ( $tt->process( $template, \%tt_vars, \$output ) );
@@ -1055,7 +1073,8 @@ sub prefs_expire {
 
 sub prefs_cookie_name {
     my $self = shift;
-    return $self->{site_name} . "_userprefs";
+    my $name = $self->{site_name} . "_userprefs";
+    $name =~ s/\W//g;
 }
 
 1;

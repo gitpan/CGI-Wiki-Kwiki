@@ -1,14 +1,17 @@
-[% INCLUDE header.tt %]
+[%# this page displays the differences between two versions of a given node.
+-%]
 
-<h1 align="center">
+[%- INCLUDE header.tt %]
+
+<h1>
   Differences between Version [% ver1 %] and Version [% ver2 %] of [% node_name %]
 </h1>
 
 [% IF diff %]
-  <table width=100%>
+  <table width="100%">
     <tr>
-      <th width=50%> Version [% ver1 %] </th>
-      <th width=50%> Version [% ver2 %] </th>
+      <th width="50%"> Version [% ver1 %] </th>
+      <th width="50%"> Version [% ver2 %] </th>
     </tr>
     [% FOREACH hunk = diff %]
       <tr>
@@ -21,6 +24,4 @@
   <h3>Contents are identical</h3>
 [% END %]
                           
-[% content %]
-
 [% INCLUDE footer.tt %]

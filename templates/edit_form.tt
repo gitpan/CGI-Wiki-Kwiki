@@ -1,6 +1,14 @@
-[% INCLUDE header.tt %]
+[%# This is the 'edit this page' page.
+-%]
 
-<h1 align=center>[% site_name %] - Editing [% node_name %]</h1>
+[%- INCLUDE header.tt %]
+
+<h1>[% site_name %] - Editing [% node_name %]</h1>
+
+[% IF preview_html %]
+  <h2>Preview</h2>
+  [% preview_html %]
+[% END %]
 
 <form action="[% cgi_url %]" method="POST">
 <textarea name="content" rows="30" cols="70">[% content %]</textarea>
@@ -15,10 +23,5 @@
 </form>
 
 <p><a href="[% cgi_url %]?node=[% node_param %]">Cancel edit</a></p>
-
-[% IF preview_html %]
-  <h2>Preview</h2>
-  [% preview_html %]
-[% END %]
 
 [% INCLUDE footer.tt %]

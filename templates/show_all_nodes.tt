@@ -1,4 +1,9 @@
-[% INCLUDE header.tt node_name = "All Nodes" %]
+[%# this page lists all the nodes in the site, along with their contents.
+    Yes, this is probably a really silly thing to do. Fortunately, it's
+    broken at the moment.
+-%]
+
+[%- INCLUDE header.tt node_name = "All Nodes" %]
 
 <h1>All Nodes</h1>
 

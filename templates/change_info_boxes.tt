@@ -1,3 +1,7 @@
+[%# These are the form elements at the bottom of the page edit box, where
+    you enter your name, pick the type of edit, etc.
+-%]
+
 <table border="0">
   <tr>
     <td>

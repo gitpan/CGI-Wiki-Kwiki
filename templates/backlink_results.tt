@@ -1,6 +1,9 @@
-[% INCLUDE header.tt %]
+[%# this page is displayed to list the backlinks to a given wiki page
+-%]
 
-<h1 align=center>[% site_name %] - Backlinks to <a href="[% cgi_url %]?node=[% node_param %]">[% node_name %]</a></h1>
+[%- INCLUDE header.tt %]
+
+<h1>[% site_name %] - Backlinks to <a href="[% cgi_url %]?node=[% node_param %]">[% node_name %]</a></h1>
 
 <p>Results found: [% num_results %]</p>
 

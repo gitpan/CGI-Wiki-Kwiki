@@ -1,4 +1,7 @@
-[% INCLUDE header.tt %]
+[%# the user preferences page
+-%]
+
+[%- INCLUDE header.tt %]
 
 [% IF show_prefs_form %]
   <form action="[% cgi_url %]" method="POST">

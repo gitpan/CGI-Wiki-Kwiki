@@ -1,5 +1,28 @@
+2004/09/02 - (0.56)
+             Added code to the installer script. Changed the Build.PL to
+             copy the templates into the perl5 lib path. Added a new
+             copy of wiki.cgi into the 'bin' directory. The installer
+             script copies the templates and the cgi script into the current
+             directory, and creates an empty sqlite database. This should
+             leave you with a working CGI::Wiki::Kwiki install.
+             
+             Added comments to most of the templates to explain their
+             function. Added a stylesheet, installed along with the
+             templates.
+             
+             Fixed bug where the prefs page died if the site had a ' in
+             the name. This will invalidate most existing preferences
+             cookies.
+             
+             Changed search to use CGI::Wiki::Search::DB, as it's simpler
+             and doesn't spew weird cleanup errors.
+             
+             Added character set support, this requires a seperate patch
+             to CGI::Wiki to allow the store to support charsets. Made
+             the default charset of a new site utf-8.
+
 2004/08/26 - (0.55)
-             Fixed "Wanted Pages" that was broken by the 0t54 updates -
+             Fixed "Wanted Pages" that was broken by the 0.54 update -
              thanks to Martin Frost for bug report.
 
 2004/08/12 - (0.54)

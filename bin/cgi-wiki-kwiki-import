@@ -11,7 +11,7 @@ wiki.
 
     cgi-wiki-kwiki-import --host <host> --type <type> --name <name>
                           --user <user> --pass <pass> --kwiki <kwiki source>
-                          --rcs-path <path to rcs binaries>
+                          --rcs-path <path to rcs binaries> --charset <charset>
 
 
 
@@ -20,6 +20,10 @@ wiki.
 If you use RCS for your kwiki back end, it assumes you have all your RCS
 programs in /usr/bin - you may have to edit import.pl to correct this if they
 are somewhere else.
+
+The charset directive determins what character set the pages are imported into
+your database with - the default is 'utf-8', as this is what Kwiki uses. Make
+sure that your wiki.cgi script agrees with this setting.
 
 There is a potential problem with the import - depending on your underlying
 filesystem, CGI::Kwiki may be case-sensitive - you can have a node 'node' and a
@@ -34,6 +38,7 @@ kwiki. The import script will flag duplicates if it sees them.
 
 use strict;
 use warnings;
+
 no warnings 'redefine';
 use CGI::Wiki;
 use Getopt::Long;
@@ -41,7 +46,7 @@ use Time::Piece;
 use CGI::Wiki::Store::Database;
 use CGI::Wiki::Formatter::Kwiki;
 use CGI::Wiki;
-
+use Encode qw( decode_utf8 );
 
 # This is a nasty hack to make the modified time of the revisions accurate.
 my $fudge_time = 0;
@@ -52,7 +57,7 @@ sub CGI::Wiki::Store::Database::_get_timestamp {
 }
 
 
-my ($dbtype, $dbname, $dbuser, $dbpass, $dbhost, $help, $path, $rcs_path);
+my ($dbtype, $dbname, $dbuser, $dbpass, $dbhost, $help, $path, $rcs_path, $charset);
 GetOptions( "type=s"   => \$dbtype,
             "name=s"   => \$dbname,
             "user=s"   => \$dbuser,
@@ -60,6 +65,7 @@ GetOptions( "type=s"   => \$dbtype,
             "host=s"   => \$dbhost,
             "help"     => \$help,
             "kwiki=s"  => \$path,
+            "charset=s" => \$charset,
             "rcs-path=s" =>\$rcs_path,
            );
 
@@ -109,6 +115,7 @@ my $store = $class->new(
     dbpass => $dbpass,
     dbuser => $dbuser,
     dbhost => $dbhost,
+    charset => $charset,
 ) or die "Could not create store\n";
 
 my $formatter = CGI::Wiki::Formatter::Kwiki->new();
@@ -116,6 +123,7 @@ my $formatter = CGI::Wiki::Formatter::Kwiki->new();
 my $wiki = CGI::Wiki->new(
     store=>$store,
     formatter=>$formatter,
+    charset => $charset || "utf-8",
 );
 
 
@@ -207,9 +215,11 @@ for my $node (@database) {
         local $/ = undef;
         open FILE, "$path/database/$node"
             or die "Can't open database node for $node: $!\n";
+        # Kwikis are in UTF8
+        binmode FILE, ":utf8";
         my $data = <FILE>;
         close FILE;
-
+        
         # We just want to pass the current checksum.
         my %data = $wiki->retrieve_node($node);
 

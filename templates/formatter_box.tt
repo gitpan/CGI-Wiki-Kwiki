@@ -1,3 +1,7 @@
+[%# this is the 'list of formatters' drop-down, displayed if there is >1
+    possible formatter choice for this page
+-%]
+
 [% IF formatter_labels.size > 1 %]
   <table border="0">
     <tr>

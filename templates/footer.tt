@@ -1,4 +1,8 @@
-</div>
+[%# the footer for every page in the site. Close anything you opened in the
+    header, and end the html
+-%]
+
+</div>[%# opened in header.tt %]
 
 <div class="page_actions">
   [% UNLESS not_editable %]

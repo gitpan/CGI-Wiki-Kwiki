@@ -1,6 +1,9 @@
-[% INCLUDE header.tt %]
+[%# This page displays a list of all node titles and links to their pages
+-%]
 
-<h1 align=center>[% site_name %] - Node List</h1>
+[%- INCLUDE header.tt %]
+
+<h1>[% site_name %] - Node List</h1>
 
 <p><a href="[% cgi_url %]?action=show_all_nodes">Show content of all
 nodes on one page</a>.</p>
