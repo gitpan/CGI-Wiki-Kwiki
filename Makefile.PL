@@ -4,7 +4,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile
   (
    NAME        => 'CGI::Wiki::Kwiki',
-   VERSION     => '0.49',
+   VERSION     => '0.50',
    PL_FILES    => {},
    INSTALLDIRS => 'site',
    PREREQ_PM   => {
@@ -17,6 +17,6 @@ WriteMakefile
 		 'Algorithm::Merge' => '0',
 		 'CGI::Wiki::Plugin::Diff' => '0',
 		 'Digest::MD5' => '0',
-		 'CGI::Wiki' => '0.05',
+		 'CGI::Wiki' => '0.52',
 		  },
   );

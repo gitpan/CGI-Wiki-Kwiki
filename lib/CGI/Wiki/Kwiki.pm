@@ -344,7 +344,7 @@ use CGI::Wiki::Plugin::Diff;
 use Template;
 use Algorithm::Merge qw(merge);
 
-our $VERSION = '0.49';
+our $VERSION = '0.50';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -525,6 +525,8 @@ sub run {
             die "Bad action\n";
         }
 
+    } elsif ( $node eq "RecentChanges" ) {
+        $self->display_recent_changes;
     } else {
 
        if ($args{diffversion}) {
@@ -572,32 +574,7 @@ sub display_node {
         metadata   => $node_data{metadata},
     );
 
-    if ( $node eq "RecentChanges" ) {
-        my @recent = $self->{wiki}->list_recent_changes( days => 7 );
-        @recent = map {
-            {
-                  name          => CGI::escapeHTML( $_->{name} ),
-                  last_modified => CGI::escapeHTML( $_->{last_modified} ),
-                  username      => CGI::escapeHTML( $_->{metadata}{username}[0] || "" ),
-                  comment       => CGI::escapeHTML( $_->{metadata}{comment}[0] || "" ),
-                  edit_type     => CGI::escapeHTML( $_->{metadata}{edit_type}[0] || "" ),
-                  url           => "$self->{cgi_path}?node=".CGI::escape( $_->{name} )
-            }
-        } @recent;
-
-        %tt_vars = (
-                     %tt_vars,
-                     recent_changes => \@recent,
-                     days           => 7,
-                     not_editable   => 1,
-                   );
-        $self->process_template(
-            template => "recent_changes.tt",
-            node     => $node,
-            vars     => \%tt_vars,
-        );
-
-    } elsif ( $node eq "WantedPages" ) {
+    if ( $node eq "WantedPages" ) {
         my @dangling = $self->{wiki}->list_dangling_links;
         @dangling = map {
             {
@@ -624,6 +601,35 @@ sub display_node {
     }
 }
 
+sub display_recent_changes {
+    my $self = shift;
+    my %recent_changes;
+    for my $days ( [0, 1], [1, 7], [7, 14], [14, 30] ) {
+        my @rc = $self->{wiki}->list_recent_changes( between_days => $days );
+        @rc = map {
+            {
+              name      => CGI::escapeHTML( $_->{name} ),
+              last_modified => CGI::escapeHTML( $_->{last_modified} ),
+              username  => CGI::escapeHTML( $_->{metadata}{username}[0] || ""),
+              comment   => CGI::escapeHTML( $_->{metadata}{comment}[0] || "" ),
+              edit_type => CGI::escapeHTML($_->{metadata}{edit_type}[0] || ""),
+              url       => "$self->{cgi_path}?node=".CGI::escape( $_->{name} )
+            }
+        } @rc;
+        if ( scalar @rc ) {
+            $recent_changes{$days->[1]} = \@rc;
+	  }
+    }
+
+    my %tt_vars = (
+                    recent_changes => \%recent_changes,
+                    not_editable   => 1,
+                  );
+    $self->process_template(
+                             template => "recent_changes.tt",
+                             vars     => \%tt_vars,
+                           );
+}
 
 sub preview_node {
     my ($self, $node, $content, $checksum, $metadata) = @_;

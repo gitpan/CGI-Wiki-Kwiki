@@ -8,7 +8,7 @@ eval { require DBD::SQLite; };
 my $run_tests = $@ ? 0 : 1;
 
 SKIP: {
-    skip "DBD::SQLite not installed - no database to test with", 6
+    skip "DBD::SQLite not installed - no database to test with", 1
         unless $run_tests;
 
     CGI::Wiki::Setup::SQLite::setup( "./t/wiki.db" );

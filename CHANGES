@@ -1,3 +1,12 @@
+             ******************* NOTE TO UPGRADERS ************************
+             **  If you are upgrading from a version earlier than 0.50,  **
+             **  please make sure that you install the updated templates **
+             **  found in the templates/ directory of the tarball.       **
+             **    Changed: recent_changes.tt                            **
+             **************************************************************
+
+2004/06/10 - (0.50) Improved RecentChanges.
+
 2004/06/02 - (0.49) Documentation tweaks, added a default template_path
              of './templates'.  New 'prefs_expire' option to let you decide
              when preferences cookie will expire.
