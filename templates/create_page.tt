@@ -1,0 +1,12 @@
+[% INCLUDE header.tt %]
+
+<h1 align=center>[% site_name %] - Create a New Page</h1>
+
+<form method="GET" action="[% cgi_url %]">
+  <input type="hidden" name="action" value="create" />
+  Enter the name of the page to make:<br />
+  <input type="text" size="70" name="node" />
+  <input type="submit" name="Go" value="Go" />
+</form>
+
+[% INCLUDE footer.tt %]

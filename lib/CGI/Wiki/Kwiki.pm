@@ -326,7 +326,7 @@ diff support.
 
 =head1 COPYRIGHT
 
-     Copyright (C) 2003 Tom Insam.  All Rights Reserved.
+     Copyright (C) 2003-2004 Tom Insam.  All Rights Reserved.
 
 This module is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
@@ -344,7 +344,7 @@ use CGI::Wiki::Plugin::Diff;
 use Template;
 use Algorithm::Merge qw(merge);
 
-our $VERSION = '0.51';
+our $VERSION = '0.52';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -479,6 +479,9 @@ sub run {
 
         } elsif ($action eq 'revert') {
             $self->revert_node($node, $args{version});
+
+        } elsif ($action eq 'create') {
+            $self->create_node( name => $node );
 
         } elsif ($action eq 'index') {
             my @nodes = sort $self->{wiki}->list_all_nodes();
@@ -839,6 +842,25 @@ sub revert_node {
 
     } else {
         die "Can't revert node for some reason.\n";
+    }
+}
+
+sub create_node {
+    my ($self, %args) = @_;
+    my $name = $args{name} || "";
+    if ( $name ) {
+        #Kludge - CGI::Wiki::Formatter::* needs a canonicalise_node_name method
+        if ( $self->{formatter}->can( "_do_freeupper" ) ) {
+            $name = $self->{formatter}->_do_freeupper( $name );
+        }
+        my $url = $self->{cgi_path} . "?action=edit;node=" .CGI->escape($name);
+        my $header = CGI->redirect( $url );
+        return $header if $self->{return_output};
+        print $header;
+    } else {
+        $self->process_template(
+            template => "create_page.tt",
+        );
     }
 }
 

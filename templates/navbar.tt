@@ -15,6 +15,9 @@
     <a href="[% cgi_url %]?action=index">All Pages</a>
   </div>
   <div class="navbar_item">
+    <a href="[% cgi_url %]?action=create">Create Page</a>
+  </div>
+  <div class="navbar_item">
     <a href="[% home_link %]">[% home_name %]</a>
   </div>
 
