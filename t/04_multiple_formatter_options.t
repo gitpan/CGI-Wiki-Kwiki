@@ -13,8 +13,8 @@ eval {
     require CGI::Wiki::Formatter::Multiple;
 };
 
-if ( $@ ) {
-    plan skip_all => "One of Test::HTML::Content, DBD::SQLite, CGI::Wiki::Formatter::Multiple not installed";
+if ( $@ || $CGI::Wiki::Formatter::Multiple::VERSION < '0.02' ) {
+    plan skip_all => "One of Test::HTML::Content, DBD::SQLite, CGI::Wiki::Formatter::Multiple (version >= 0.02) not installed";
 } else {
     plan tests => 6;
 
@@ -37,6 +37,7 @@ if ( $@ ) {
                              action        => "edit",
                              node          => "New Node",
                            );
+    $output =~ s/^Content-Type.*[\r\n]+//m; # strip header
     Test::HTML::Content::tag_ok( $output, "select", { name => "formatter" },
                                  "formatter select offered on edit page" );
     Test::HTML::Content::tag_ok( $output, "option", { value => "pony" },
@@ -51,7 +52,8 @@ if ( $@ ) {
                           content       => "foo",
                           formatter     => "pony",
                         );
-
+    $output =~ s/^Content-Type.*[\r\n]+//m; # strip header
+    
     Test::HTML::Content::tag_ok( $output, "select", { name => "formatter" },
                                  "formatter select offered on preview page" );
     Test::HTML::Content::tag_ok( $output, "option",
@@ -70,6 +72,8 @@ if ( $@ ) {
                           content       => "foo",
                           formatter     => "pie",
                         );
+    $output =~ s/^Content-Type.*[\r\n]+//m; # strip header
+    
     Test::HTML::Content::tag_ok( $output, "option",
                                  { value => "pie", selected => "1" },
                                  "pie formatter selected when appropriate" );

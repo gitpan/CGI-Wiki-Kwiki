@@ -49,6 +49,8 @@ if ( $@ ) {
                              return_output => 1,
                              node          => "New Node",
                            );
+    $output =~ s/^Content-Type.*[\r\n]+//m; # strip header
+    
     like( $output, qr/PONY/, "single-formatter wiki displays node right" );
 
     # Now test that the formatter type option isn't offered on the edit
@@ -72,6 +74,8 @@ if ( $@ ) {
                               action        => "edit",
                               node          => "New Node",
                             );
+
+        $output =~ s/^Content-Type.*[\r\n]+//m; # strip header
         Test::HTML::Content::no_tag( $output, "select", { name => "formatter"},
             "no formatter select offered on edit page if only one formatter" );
 

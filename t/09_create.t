@@ -25,6 +25,8 @@ if ( $@ ) {
                              return_output => 1,
                              action        => "create",
                            );
+    $output =~ s/^Content-Type.*[\r\n]+//m; # strip header
+
     Test::HTML::Content::tag_ok( $output, "form", {},
             "action=create with no arguments offers a form" );
     Test::HTML::Content::tag_ok( $output, "input",

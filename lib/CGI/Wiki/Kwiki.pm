@@ -355,7 +355,7 @@ use CGI::Wiki::Plugin::Diff;
 use Template;
 use Algorithm::Merge qw(merge);
 
-our $VERSION = '0.56';
+our $VERSION = '0.57';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -420,7 +420,7 @@ sub new {
         my $formatter_class = ref $formatter ? shift @$formatter : $formatter;
         eval "require $formatter_class";
         if ( $@ ) {
-            die "Couldn't 'use' $formatter_class: $@";
+            die "Couldn't 'use' $formatter_class: $@\n";
         }
         my %formatter_args = ref $formatter ? @$formatter : ( );
         $formatter_args{node_prefix} ||= $self->{cgi_path} . "?node=";
@@ -458,8 +458,10 @@ sub run {
     my ($self, %args) = @_;
     # arguments coming in from the CGI script won't be encoded correctly,
     # but wen know what character set we _told_ the browser to use..
-    for (keys(%args)) {
-      $args{$_} = Encode::decode($self->{charset}, $args{$_});
+    if ($CGI::Wiki::CAN_USE_ENCODE) {
+        for (keys(%args)) {
+          $args{$_} = Encode::decode($self->{charset}, $args{$_});
+        }
     }
 
     $self->{return_tt_vars} = delete $args{return_tt_vars} || 0;
@@ -579,7 +581,7 @@ sub show_all_nodes {
         my %data = $wiki->retrieve_node( $name );
         my $formatted_content = $wiki->format($data{content}, $data{metadata});
         my $param = $wiki->formatter->node_name_to_node_param( $name );
-        my $url = $self->{cgi_url} . "?node=" . $param;
+        my $url = $self->{cgi_url} . "?" . $param;
         push @nodes, {
                        name              => $name,
                        formatted_content => $formatted_content,

@@ -1,3 +1,7 @@
+2005/01/27 - (0.57)
+             Small update to fix test failures when old version of
+             CGI::Wiki::Formatter::Multiple is installed (Bob Walker).
+
 2004/09/02 - (0.56)
              Added code to the installer script. Changed the Build.PL to
              copy the templates into the perl5 lib path. Added a new
