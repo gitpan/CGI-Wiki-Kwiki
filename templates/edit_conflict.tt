@@ -12,6 +12,7 @@ You will need to manually merge your changes into the new version.
 <form action="[% cgi_url %]" method="POST">
 <textarea name="content" rows="10" cols="70">[% stored %]</textarea>
 <br />
+[% INCLUDE change_info_boxes.tt %]
 <input type="hidden" name="node" value="[% node_name %]">
 <input type="hidden" name="checksum" value="[% checksum %]" />
 <input type="submit" name="preview" value="preview" />

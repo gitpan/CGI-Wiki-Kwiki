@@ -1,10 +1,12 @@
 Build.PL
 Makefile.PL
+META.yml
 lib/CGI/Wiki/Kwiki.pm
 MANIFEST
 README
 CHANGES
 templates/backlink_results.tt
+templates/change_info_boxes.tt
 templates/edit_conflict.tt
 templates/edit_form.tt
 templates/header.tt
@@ -13,10 +15,12 @@ templates/node.tt
 templates/node_history.tt
 templates/recent_changes.tt
 templates/search_results.tt
-templates/search_results.tt
 templates/site_index.tt
+templates/userstats.tt
 templates/wanted_pages.tt
 wiki.cgi
 bin/cgi-wiki-kwiki-import
 bin/cgi-wiki-kwiki-install
+t/00_setup.t
 t/01_test.t
+t/02_userstats.t

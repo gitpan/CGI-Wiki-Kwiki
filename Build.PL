@@ -9,10 +9,17 @@ my $build = Module::Build->new(
         'CGI::Kwiki'  => 0,
         'CGI::Wiki::Formatter::Kwiki' => 0,
         'Template' => 0,
-        'Test::Simple' => 0,
         'Getopt::Long' => 0,
         'Time::Piece' => 0,
         'Search::InvertedIndex' => 0,
+    },
+    recommends => {
+        'DBD::SQLite' => 0, # for testing
+        'DBI'         => 0, # for testing
+        'IO::Stringy' => 0, # for testing
+    },
+    build_requires => {
+        'Test::More' => 0,
     },
     create_makefile_pl => 'traditional',
      script_files => [

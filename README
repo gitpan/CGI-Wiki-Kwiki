@@ -30,7 +30,6 @@ Finally, take the wiki.cgi and the templates folder from the CGI::Wiki::Kwiki ta
 h2. Outstanding bugs
 
 * all backlinks are lower case
-* username of person who made changes not tracked
 * no diff ability
 * templates are ugly
-* no useful tests
+* not enough tests

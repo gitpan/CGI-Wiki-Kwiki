@@ -11,8 +11,14 @@
   <li><a href="[% node.url %]">[% node.name %]</a>
       [% node.last_modified %]
       (<a href="[% node.url %];action=list_all_versions">see changes</a>)
+      [% IF node.edit_type %]
+        <i>([% node.edit_type %])</i>
+      [% END %]
       [% IF node.comment %]
         <b>[[% node.comment %]]</b>
+      [% END %]
+      [% IF node.username %]
+        ..... <a href="[% cgi_url %]?username=[% node.username %];action=userstats">[% node.username %]</a>
       [% END %]
   </li>
 [% END %]

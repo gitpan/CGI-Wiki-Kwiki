@@ -103,7 +103,7 @@ use Search::InvertedIndex;
 use CGI::Wiki::Search::SII;
 use Template;
 
-our $VERSION = '0.21';
+our $VERSION = '0.3';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -182,14 +182,20 @@ sub new {
 sub run {
     my ($self, %args) = @_;
     my ($node, $action) = @args{'node', 'action'};
+    my $metadata = { username  => $args{username},
+                     comment   => $args{comment},
+                     edit_type => $args{edit_type},
+                   };
 
     if ($action) {
 
         if ($action eq 'commit') {
-            $self->commit_node($node, $args{content}, $args{checksum});
+            $self->commit_node($node, $args{content}, $args{checksum},
+                               $metadata);
     
         } elsif ($action eq 'preview') {
-            $self->preview_node($node, $args{content}, $args{checksum});
+            $self->preview_node($node, $args{content}, $args{checksum},
+                                $metadata);
     
         } elsif ($action eq 'edit') {
             $self->edit_node($node, $args{version});
@@ -225,6 +231,9 @@ sub run {
             }
             print "\n\nindexed all nodes\n";
             exit 0;
+
+        } elsif ($action eq 'userstats') {
+            $self->do_userstats( %args );
         } else {
             die "Bad action\n";
         }
@@ -271,7 +280,9 @@ sub display_node {
             {
                   name          => CGI::escapeHTML( $_->{name} ),
                   last_modified => CGI::escapeHTML( $_->{last_modified} ),
-                  comment       => CGI::escapeHTML( $_->{comment} ),
+                  username      => CGI::escapeHTML( $_->{metadata}{username}[0] || "" ),
+                  comment       => CGI::escapeHTML( $_->{metadata}{comment}[0] || "" ),
+                  edit_type     => CGI::escapeHTML( $_->{metadata}{edit_type}[0] || "" ),
                   url           => "$self->{cgi_path}?node=".CGI::escape( $_->{name} )
             }
         } @recent;
@@ -300,13 +311,14 @@ sub display_node {
 
 
 sub preview_node {
-    my ($self, $node, $content, $checksum) = @_;
+    my ($self, $node, $content, $checksum, $metadata) = @_;
 
     if ( $self->{wiki}->verify_checksum( $node, $checksum ) ) {
         my %tt_vars = (
             content      => CGI::escapeHTML($content),
             preview_html => $self->{wiki}->format($content),
             checksum     => CGI::escapeHTML($checksum),
+            map { $_ => CGI::escapeHTML($metadata->{$_}||"") } keys %$metadata,
         );
 
         $self->process_template( "edit_form.tt", $node, \%tt_vars );
@@ -318,6 +330,7 @@ sub preview_node {
             checksum    => CGI::escapeHTML($checksum),
             new_content => CGI::escapeHTML($content),
             stored      => CGI::escapeHTML($stored),
+            map { $_ => CGI::escapeHTML($metadata->{$_}||"") } keys %$metadata,
         );
         $self->process_template( "edit_conflict.tt", $node, \%tt_vars );
     }
@@ -380,9 +393,10 @@ sub process_template {
 }
 
 sub commit_node {
-    my ($self, $node, $content, $checksum) = @_;
+    my ($self, $node, $content, $checksum, $metadata) = @_;
 
-    my $written = $self->{wiki}->write_node( $node, $content, $checksum );
+    my $written = $self->{wiki}->write_node( $node, $content, $checksum,
+                                             $metadata );
 
     if ($written) {
         $self->display_node($node);
@@ -393,7 +407,8 @@ sub commit_node {
         my %tt_vars = (
             checksum    => CGI::escapeHTML($checksum),
             new_content => CGI::escapeHTML($content),
-            stored      => CGI::escapeHTML($stored)
+            stored      => CGI::escapeHTML($stored),
+            map { $_ => CGI::escapeHTML($metadata->{$_}||"") } keys %$metadata,
         );
         $self->process_template( "edit_conflict.tt", $node, \%tt_vars );
     }
@@ -405,7 +420,7 @@ sub revert_node {
     my %node_data = $self->{wiki}->retrieve_node( name=>$node, version=>$version );
     my %current_node = $self->{wiki}->retrieve_node( $node );
 
-    my $written = $self->{wiki}->write_node( $node, $node_data{content}, $current_node{checksum} );
+    my $written = $self->{wiki}->write_node( $node, $node_data{content}, $current_node{checksum}, { username => "Auto Revert", comment => "Reverted to version $version" } );
 
     if ($written) {
         $self->display_node($node);
@@ -497,4 +512,27 @@ sub search {
     $self->process_template("search_results.tt", undef, \%tt_vars);
     
     
+}
+
+sub do_userstats {
+    my ($self, %args) = @_;
+    my $username = $args{username};
+    my $num_changes = $args{n} || 5;
+    die "No username supplied to show_userstats" unless $username;
+    my @nodes = $self->{wiki}->list_recent_changes(
+        last_n_changes => $num_changes,
+        metadata_is    => { username => $username }
+    );
+    @nodes = map {
+        {
+          name          => CGI::escapeHTML($_->{name}),
+	  last_modified => CGI::escapeHTML($_->{last_modified}),
+          comment       => CGI::escapeHTML($_->{metadata}{comment}[0]),
+          url           => $self->{cgi_path} . "?node=" . CGI::escape($_->{name}),
+        }
+                 } @nodes;
+    my %tt_vars = ( nodes    => \@nodes,
+		    username => CGI::escapeHTML($username),
+                  );
+    $self->process_template("userstats.tt", undef, \%tt_vars);
 }

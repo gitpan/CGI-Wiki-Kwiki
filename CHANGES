@@ -5,3 +5,6 @@
 
 2003/07/18 - (0.2) Added search, using Search::InvertedIndex
              (0.21) ..and added the new template to the MANIFEST. Oops.
+
+           - (0.3) Added username/comment support.  Added a start at tests.
+             Added support for the 'userstats' action.
