@@ -19,9 +19,9 @@
 [% END %]
 </ul>
 
+<hr />
 <p>
-  <a href="[% cgi_url %]?node=[% node_param %]">View current revision</a>
+  <a class="menu" href="[% cgi_url %]?node=[% node_param %]">View current revision</a>
 </p>
 
-</body>
-</html>
+[% INCLUDE footer.tt %]

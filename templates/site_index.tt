@@ -7,5 +7,4 @@
   [% END %]
 </ul>
 
-</body>
-</html>
+[% INCLUDE footer.tt %]

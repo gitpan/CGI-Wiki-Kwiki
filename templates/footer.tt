@@ -1,0 +1,21 @@
+</div>
+
+[% UNLESS not_editable %]
+  <hr />
+  <p>
+    [% IF version %]
+      [<a class="menu" href="[% cgi_url %]?node=[% node_param %]">View current version</a>]
+    [% ELSE %]
+      [<a class="menu" href="[% cgi_url %]?node=[% node_param %];action=edit">Edit this page</a>]
+      [<a class="menu" href="[% cgi_url %]?node=[% node_param %];action=list_all_versions">Other versions</a>]
+      [<a class="menu" href="[% cgi_url %]?node=[% node_param %];action=show_backlinks">Links to this page</a>]
+    [% END %]
+  </p>
+[% END %]
+
+<hr />
+<div class="credits">
+  <p>Powered by <a href="http://search.cpan.org/perldoc?CGI::Wiki::Kwiki">CGI::Wiki::Kwiki</a> (version [% dist_version %]).</p>
+</div>
+</body>
+</html>

@@ -33,5 +33,4 @@ You will need to manually merge your changes into the new version.
   [% preview_html %]
 [% END %]
 
-</body>
-</html>
+[% INCLUDE footer.tt %]

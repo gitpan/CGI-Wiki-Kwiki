@@ -7,10 +7,14 @@ use Digest::MD5 qw( md5_hex );
 
 use lib "./t/lib"; # for test formatters
 
-eval { require Test::HTML::Content; require DBD::SQLite; };
+eval {
+    require Test::HTML::Content;
+    require DBD::SQLite;
+    require CGI::Wiki::Formatter::Multiple;
+};
 
 if ( $@ ) {
-    plan skip_all => "Either Test::HTML::Content or DBD::SQLite not installed";
+    plan skip_all => "One of Test::HTML::Content, DBD::SQLite, CGI::Wiki::Formatter::Multiple not installed";
 } else {
     plan tests => 6;
 

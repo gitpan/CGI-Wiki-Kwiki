@@ -20,5 +20,4 @@
   [% preview_html %]
 [% END %]
 
-</body>
-</html>
+[% INCLUDE footer.tt %]

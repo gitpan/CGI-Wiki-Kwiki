@@ -2,7 +2,12 @@
 
 <html>
 <head>
-  <title>[% node_name %] - [% site_name %]</title>
+  <title>
+    [% IF version %]
+      Historical version [% version %] of
+    [% END %]
+    [% node_name %] - [% site_name %]
+  </title>
 
   [% IF stylesheet_url %]
     <link rel="stylesheet" href="[% stylesheet_url %]" type="text/css">
@@ -19,3 +24,5 @@
 <body>
 
 [% INCLUDE navbar.tt %]
+
+<div class="content">

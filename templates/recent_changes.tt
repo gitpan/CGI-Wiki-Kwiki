@@ -24,11 +24,4 @@
 [% END %]
 </ul>
 
-<p>
-  [<a href="[% cgi_url %]?node=[% node_param %];action=edit">Edit this page</a>]
-  [<a href="[% cgi_url %]?node=[% node_param %];action=list_all_versions">Other versions</a>]
-  [<a href="[% cgi_url %]?node=[% node_param %];action=show_backlinks">Links to this page</a>]
-</p>
-
-</body>
-</html>
+[% INCLUDE footer.tt %]

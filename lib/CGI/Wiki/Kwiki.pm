@@ -153,7 +153,7 @@ use Search::InvertedIndex;
 use CGI::Wiki::Search::SII;
 use Template;
 
-our $VERSION = '0.42';
+our $VERSION = '0.43';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -275,7 +275,7 @@ sub run {
     
         } elsif ($action eq 'index') {
             my @nodes = sort $self->{wiki}->list_all_nodes();
-            $self->process_template( "site_index.tt", "index", { nodes => \@nodes } );
+            $self->process_template( "site_index.tt", "index", { nodes => \@nodes, not_editable => 1 } );
     
         } elsif ($action eq 'show_backlinks') {
             $self->show_backlinks($node);
@@ -355,10 +355,14 @@ sub display_node {
                   url           => "$self->{cgi_path}?node=".CGI::escape( $_->{name} )
             }
         } @recent;
-        $tt_vars{recent_changes} = \@recent;
-        $tt_vars{days}           = 7;
-        $self->process_template( "recent_changes.tt", $node, \%tt_vars );
 
+        %tt_vars = (
+                     %tt_vars,
+                     recent_changes => \@recent,
+                     days           => 7,
+                     not_editable   => 1,
+                   );
+        $self->process_template( "recent_changes.tt", $node, \%tt_vars );
 
     } elsif ( $node eq "WantedPages" ) {
         my @dangling = $self->{wiki}->list_dangling_links;
@@ -371,6 +375,7 @@ sub display_node {
         } sort @dangling;
 
         $tt_vars{wanted} = \@dangling;
+        $tt_vars{not_editable} = 1;
         $self->process_template( "wanted_pages.tt", $node, \%tt_vars );
 
     } else {
@@ -446,14 +451,15 @@ sub process_template {
 
     my %tt_vars = (
         %$vars,
-        site_name     => $self->{site_name},
-        cgi_url       => $self->{cgi_path},
-        contact_email => $self->{admin_email},
-        description   => "",
-        keywords      => "",
-        home_link     => $self->{cgi_path},
-        home_name     => "Home",
+        site_name      => $self->{site_name},
+        cgi_url        => $self->{cgi_path},
+        contact_email  => $self->{admin_email},
+        description    => "",
+        keywords       => "",
+        home_link      => $self->{cgi_path},
+        home_name      => "Home",
         stylesheet_url => $self->{stylesheet_url},
+        dist_version   => "$VERSION",
     );
 
     if ($node) {
@@ -558,9 +564,10 @@ sub list_all_versions {
 
     @history = reverse @history;
     my %tt_vars = (
-        node    => $node,
-        version => $curr_version,
-        history => \@history
+        node         => $node,
+        version      => $curr_version,
+        history      => \@history,
+        not_editable => 1,
     );
     $self->process_template("node_history.tt", $node, \%tt_vars );
 }
@@ -616,8 +623,9 @@ sub do_userstats {
           url           => $self->{cgi_path} . "?node=" . CGI::escape($_->{name}),
         }
                  } @nodes;
-    my %tt_vars = ( nodes    => \@nodes,
-		    username => CGI::escapeHTML($username),
+    my %tt_vars = ( nodes        => \@nodes,
+		    username     => CGI::escapeHTML($username),
+                    not_editable => 1,
                   );
     $self->process_template("userstats.tt", undef, \%tt_vars);
 }

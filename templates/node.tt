@@ -1,19 +1,12 @@
 [% INCLUDE header.tt %]
 
-
-<h1 align=center>[% site_name %] - [% node_name %]</h1>
+<h1 align="center">
+  [% IF version %]
+    Historical version [% version %] of
+  [% END %]
+  [% node_name %] - [% site_name %]
+</h1>
 
 [% content %]
 
-<p>
-  [% IF version %]
-    [<a class="menu" href="[% cgi_url %]?node=[% node_param %];action=edit">Edit current version</a>]
-  [% ELSE %]
-    [<a class="menu" href="[% cgi_url %]?node=[% node_param %];action=edit">Edit this page</a>]
-  [% END %]
-  [<a class="menu" href="[% cgi_url %]?node=[% node_param %];action=list_all_versions">Other versions</a>]
-  [<a class="menu" href="[% cgi_url %]?node=[% node_param %];action=show_backlinks">Links to this page</a>]
-</p>
-
-</body>
-</html>
+[% INCLUDE footer.tt %]

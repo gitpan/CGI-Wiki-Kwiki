@@ -1,6 +1,6 @@
 [% INCLUDE header.tt %]
 
-<h1 align=center>[% site_name %] - Backlinks to [% node_name %]</h1>
+<h1 align=center>[% site_name %] - Backlinks to <a href="[% cgi_url %]?node=[% node_param %]">[% node_name %]</a></h1>
 
 <p>Results found: [% num_results %]</p>
 
@@ -10,6 +10,4 @@
   [% END %]
 </ul>
 
-
-</body>
-</html>
+[% INCLUDE footer.tt %]
