@@ -66,6 +66,7 @@ if ( $@ ) {
                           return_output => 1,
                           action        => "preview",
                           node          => "New Node",
+                          checksum      => md5_hex( "" ),
                           content       => "foo",
                           formatter     => "pie",
                         );

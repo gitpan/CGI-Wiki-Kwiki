@@ -344,7 +344,7 @@ use CGI::Wiki::Plugin::Diff;
 use Template;
 use Algorithm::Merge qw(merge);
 
-our $VERSION = '0.52';
+our $VERSION = '0.53';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -778,6 +778,11 @@ sub process_template {
 sub commit_node {
     my ($self, $node, $content, $checksum, $ancestor, $metadata) = @_;
 
+    my @formatters = keys %{ $self->{formatters} };
+    if ( scalar @formatters == 1 ) {
+        $metadata->{formatter} = $formatters[0];
+    }
+
     my $written = $self->{wiki}->write_node( $node, $content, $checksum,
                                              $metadata );
 
@@ -901,10 +906,10 @@ sub list_all_versions {
             version => $version
         );
         push @history, {
-            version  => $version,
-            modified => $node_data{last_modified},
-            username => $node_data{metadata}{username}[0],
-            comment  => $node_data{metadata}{comment}[0],
+            version  => CGI::escapeHTML( $version ),
+            modified => CGI::escapeHTML( $node_data{last_modified} ),
+            username => CGI::escapeHTML( $node_data{metadata}{username}[0] ),
+            comment  => CGI::escapeHTML( $node_data{metadata}{comment}[0] ),
         };
     }
 

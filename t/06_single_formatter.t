@@ -11,7 +11,7 @@ eval { require DBD::SQLite; };
 if ( $@ ) {
     plan skip_all => "DBD::SQLite not installed - no database to test with";
 } else {
-    plan tests => 2;
+    plan tests => 3;
 
     # We're testing the behaviour of a wiki that only has one formatter
     # defined.
@@ -34,7 +34,15 @@ if ( $@ ) {
                 action        => "commit",
                 node          => "New Node",
                 content       => "foo",
+                username      => "Kake",        # avoid uninit value warning
+                comment       => "New page.",   # " "
+                edit_type     => "Normal edit", # " "
               );
+
+    # Check that a default value went in for the formatter.
+    my %data = $wiki->{wiki}->retrieve_node( "New Node" );
+    is( $data{metadata}{formatter}[0], "pony",
+        "default value set for formatter in single-formatter wiki" );
 
     # Check that it displays right.
     my $output = $wiki->run(

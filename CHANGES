@@ -1,3 +1,8 @@
+2004/07/23 - (0.53)
+             Fixed bug - formatter name wasn't getting stored for single-
+             formatter wikis.  Fixed other bug - HTML wasn't getting
+             escaped in comments when listing all versions of a node.
+
              ******************* NOTE TO UPGRADERS ************************
              **  If you are upgrading from a version earlier than 0.52,  **
              **  please make sure that you install the updated templates **
