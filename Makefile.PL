@@ -3,20 +3,20 @@
 use ExtUtils::MakeMaker;
 WriteMakefile
   (
-   NAME        => 'CGI::Wiki::Kwiki',
-   VERSION     => '0.43',
-   PL_FILES    => {},
-   INSTALLDIRS => 'site',
-   PREREQ_PM   => {
-		 'Getopt::Long' => '0',
-		 'CGI::Wiki::Formatter::Kwiki' => '0',
-		 'Search::InvertedIndex' => '0',
-		 'Time::Piece' => '0',
-		 'Template' => '0',
-		 'CGI' => '0',
-		 'Test::More' => '0',
-		 'CGI::Kwiki' => '0',
-		 'Digest::MD5' => '0',
-		 'CGI::Wiki' => '0.05',
-		  },
+   NAME          => 'CGI::Wiki::Kwiki',
+   VERSION_FROM  => 'lib/CGI/Wiki/Kwiki.pm',
+   PL_FILES      => {},
+   INSTALLDIRS   => 'site',
+   PREREQ_PM     => {
+		      'Getopt::Long' => '0',
+		      'CGI::Wiki::Formatter::Kwiki' => '0',
+		      'Search::InvertedIndex' => '0',
+		      'Time::Piece' => '0',
+		      'Template' => '0',
+		      'CGI' => '0',
+		      'Test::More' => '0',
+		      'CGI::Kwiki' => '0',
+		      'Digest::MD5' => '0',
+		      'CGI::Wiki' => '0.05',
+		     },
   );

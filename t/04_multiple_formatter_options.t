@@ -24,7 +24,6 @@ if ( $@ ) {
     my $wiki = CGI::Wiki::Kwiki->new(
         db_type       => "SQLite",
         db_name       => "./t/wiki.db",
-        db_user       => 'foo', # this should be unnecessary!  FIXME
         formatters    => {
                            pony     => "Local::Test::Formatter::Pony",
                            pie      => "Local::Test::Formatter::Pie"

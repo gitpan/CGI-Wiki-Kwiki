@@ -1,3 +1,7 @@
+2003/11/24 - (0.44) Added ability to specify hostname of database server,
+             requested by Jody Belka.  db_user no longer required for
+             SQLite backend.
+
 2003/10/10 - (0.43) Fixed test skipping in t/04_multiple_formatter_options.t
              - thanks to Josts Smokehouse for finding the failure.
              Added footer.tt with a little credit in, plus the version.

@@ -17,7 +17,6 @@ SKIP: {
     my $wiki = CGI::Wiki::Kwiki->new(
         db_type       => "SQLite",
         db_name       => "./t/wiki.db",
-        db_user       => 'foo', # this should be unnecessary!  FIXME
         template_path => './templates',
     );
     $wiki->{wiki}->write_node( "Node 1", "This is Node 1", undef,

@@ -26,9 +26,10 @@ you must provide are marked.
 
     my $wiki = CGI::Wiki::Kwiki->new(
         db_type => 'MySQL',
-        db_user => undef,                     # required
+        db_user => '',
         db_pass => '',
         db_name => undef,                     # required
+        db_host => '',
         formatters => {
             documentation => 'CGI::Wiki::Formatter::Pod',
             tests         => 'My::Own::PlainText::Formatter',
@@ -153,13 +154,14 @@ use Search::InvertedIndex;
 use CGI::Wiki::Search::SII;
 use Template;
 
-our $VERSION = '0.43';
+our $VERSION = '0.44';
 
 my $default_options = {
     db_type => 'MySQL',
-    db_user => undef,
+    db_user => '',
     db_pass => '',
     db_name => undef,
+    db_host => '',
     formatters => {
                     default => [
                                  'CGI::Wiki::Formatter::Default',
@@ -204,6 +206,7 @@ sub new {
         dbname => $self->{db_name},
         dbuser => $self->{db_user},
         dbpass => $self->{db_pass},
+        dbhost => $self->{db_host},
     ) or die "Couldn't create store of class $store_class";
 
     my %formatter_objects;
@@ -341,6 +344,7 @@ sub display_node {
         node_name  => CGI::escapeHTML($node),
         node_param => CGI::escape($node),
         version    => $version,
+        metadata   => $node_data{metadata},
     );
 
     if ( $node eq "RecentChanges" ) {
