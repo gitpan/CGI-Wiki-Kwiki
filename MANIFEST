@@ -7,6 +7,7 @@ README
 CHANGES
 templates/backlink_results.tt
 templates/change_info_boxes.tt
+templates/differences.tt
 templates/edit_conflict.tt
 templates/edit_form.tt
 templates/footer.tt
@@ -30,6 +31,7 @@ t/03_multiple_formatters.t
 t/04_multiple_formatter_options.t
 t/05_store_formatter_option.t
 t/06_single_formatter.t
+t/07_diffs.t
 t/lib/Local/Test/Formatter/Buffy.pm
 t/lib/Local/Test/Formatter/Pie.pm
 t/lib/Local/Test/Formatter/Pony.pm

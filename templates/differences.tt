@@ -1,0 +1,26 @@
+[% INCLUDE header.tt %]
+
+<h1 align="center">
+  Differences between Version [% ver1 %] and Version [% ver2 %] of [% node_name %]
+</h1>
+
+[% IF diff %]
+  <table width=100%>
+    <tr>
+      <th width=50%> Version [% ver1 %] </th>
+      <th width=50%> Version [% ver2 %] </th>
+    </tr>
+    [% FOREACH hunk = diff %]
+      <tr>
+        <td>[% hunk.left %]</td>
+        <td>[% hunk.right %]</td>
+      </tr>
+    [% END %]
+  </table><hr>
+[% ELSE %]
+  <h3>Contents are identical</h3>
+[% END %]
+                          
+[% content %]
+
+[% INCLUDE footer.tt %]

@@ -8,7 +8,6 @@ My objectives were:
 
 The files here basically do that with a few caveats.
 
-* The front end doesn't do diffs yet.
 * The import script (and front end) don't track the username/ip of the editing user/host/whatever.
 
 
@@ -30,6 +29,5 @@ Finally, take the wiki.cgi and the templates folder from the CGI::Wiki::Kwiki ta
 h2. Outstanding bugs
 
 * all backlinks are lower case
-* no diff ability
 * templates are ugly
 * not enough tests

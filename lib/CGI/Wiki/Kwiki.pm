@@ -13,6 +13,92 @@ more of CGI::Wiki's capabilities, and so on.  It uses the L<Template>
 Toolkit to allow quick and easy customisation of your wiki's look
 without you needing to dive into the code.
 
+=head1 SYNOPSIS
+
+  #!/usr/bin/perl -w
+  use strict;
+  use warnings;
+  use CGI;
+  use CGI::Wiki::Kwiki;
+
+  my %config = (
+    db_type => 'SQLite',
+    db_name => '/home/wiki/data/node.db',
+    formatters => {
+                    default => 'CGI::Wiki::Formatter::Default',
+                  },
+  );
+
+  # The following tweaking should make its way out of wiki.cgi and
+  # into the module...
+
+  my %vars = CGI::Vars();
+
+  # certain actions are the result of button presses.
+  $vars{action} = 'commit' if $vars{commit};
+  $vars{action} = 'preview' if $vars{preview};
+  $vars{action} = 'search' if $vars{search};
+
+  # It's possible to pass the node name in more than one way.
+  $vars{node} ||= CGI::param('keywords');
+
+  eval {
+      CGI::Wiki::Kwiki->new(%config)->run(%vars);
+  };
+
+  if ($@) {
+      print "Content-type: text/plain\n\n";
+      print "There was a problem with CGI::Wiki::Kwiki:\n\n--\n";
+      print "$@";
+      print "\n--\n";
+      print STDERR $@;
+  }
+
+(B<Note:> In that script and in the following, replace
+C</home/wiki/data/node.db> with a filename in a directory that you
+will be able to make readable and writeable by the user that your
+webserver runs as.  SQLite requires access to both the file (for
+writing data) and the directory it resides in (for creating a
+lockfile).)
+
+The above is a complete and absolutely minimal wiki CGI script.  To
+make it work as-is:
+
+=over
+
+=item B<Set up the backend database>
+
+This example uses L<DBD::SQLite>, so make sure you have that installed.
+Then run the following command (which should have come with your
+L<CGI::Wiki> install) to initialise an SQLite database:
+
+  cgi-wiki-setupdb --type sqlite --name /home/wiki/data/node.db
+
+You should see notification of tables being created.
+
+Make sure that the webserver will be able to write to the database
+file and to the directory it lives in.
+
+=item B<Install the script and its templates>
+
+Put the script somewhere suitable so that your webserver will execute it.
+
+Make a subdirectory of the directory the script is in, called
+C<templates>.  Copy the templates from the L<CGI::Wiki::Kwiki> tarball
+into this directory.  The webserver will need to read from here but it
+doesn't need to be able to write.
+
+=item B<Set up a place for the searcher to index your wiki into>
+
+Make a subdirectory of the directory the script is in, called
+C<search_map>.  Make this writeable by the webserver.
+
+=back
+
+You can have all kinds of other fun with it though; see EXAMPLES
+below.  In particular, a nicer formatter to use is
+L<CGI::Wiki::Formatter::UseMod>.
+
 =head1 METHODS
 
 =over 4
@@ -101,6 +187,111 @@ header. Takes no options.
 
 =back
 
+=head1 EXAMPLES
+
+Just for fun, here is the configuration part of the wiki script Kake
+uses at work, full of horrid little hacks.  Kake is thoroughly ashamed
+of herself but feels this is worth showing around in case anyone
+accidentally gets a useful idea from it.
+
+  #!/usr/bin/perl -w
+  use strict;
+  use warnings;
+  use CGI;
+  use CGI::Wiki::Formatter::UseMod;
+  use CGI::Wiki::Kwiki;
+  use CGI::Wiki::Store::SQLite;
+  use LWP::Simple;
+
+  # Set up an array of allowed tags so we can make a macro to show them.
+  my @allowed_tags = qw( a b p i em tt pre img div code br );
+
+  # Set up the formatter conf here since we will be setting up an extra
+  # formatter in order to make links with some of the macros.
+  my %formatter_conf = (
+                         extended_links => 1,
+                         implicit_links => 0,
+                         allowed_tags => \@allowed_tags,
+                         node_prefix => "index.cgi?node=",
+                         edit_prefix => "index.cgi?action=edit;node=",
+                         # branding is important
+                         munge_node_name => sub {
+                             my $node_name = shift;
+                             $node_name =~ s/State51/state51/g;
+                             $node_name = "alex" if $node_name eq "Alex";
+                             return $node_name;
+                         },
+                       );
+  my $formatter = CGI::Wiki::Formatter::UseMod->new( %formatter_conf );
+  # Create an extra wiki object too for passing to ->format when we call
+  # it in the macros - so the formatter can find out which nodes already
+  # exist.
+  my $wiki = CGI::Wiki->new(
+      store => CGI::Wiki::Store::SQLite->new(
+                                          dbname => "./data/node.db"
+                                            )
+                           );
+
+  my %macros = (
+      # Perl Advent Calendar feed
+      '@PERL_ADVENT_TODAY' => sub {
+          my $xml = get( "http://perladvent.org/perladventone.rdf" )
+            or return "[Can't get RSS for the Perl Advent Calendar!]";
+          # Yes I know parsing XML with regexes is yuck, but this
+          # is just a quick hack for December.
+          if ( $xml =~ m|<item>\s*<title>([^<]+)</title>\s*<link>([^<]+)</link>| ) {
+              return qq(<div align="center" style="border:dashed 1px; padding-top:5px; padding-bottom:5px;">Today's Perl Advent Calendar goodie is: [<a href="$2">$1</a>]</div>);
+          } else {
+              return "Can't parse Perl Advent Calendar RSS!";
+          }
+      },
+
+      # Match state51::* modules and link to wiki page.
+      qr/\b(state51::\w+(::\w+)*)\b/ => sub {
+          my $module_name = shift;
+          my $link = $formatter->format( "[[$module_name]]", $wiki );
+          $link =~ s|<p>||;
+          $link =~ s|</p>||;
+          chomp $link; # or headings won't work
+          return "<tt>$link</tt>";
+      },
+
+      # Match non-state51::* modules and link to search.cpan.org.
+      # Don't match anything already inside an <a href ...
+      # or preceded by a :, since that will be part of state51::*
+      qr/(?<![>:])\b([A-Za-rt-z]\w*::\w+(::w+)*)\b/ => sub {
+          my $module_name = shift;
+          my $dist = $module_name;
+          $dist =~ s/::/-/g;
+          return qq(<a href="http://search.cpan.org/dist/$dist"><tt><small>(CPAN)</small> $module_name</tt></a>);
+      },
+
+      # Print method names in <tt>
+      qr/(->\w+)/ => sub { return "<tt>$_[0]</tt>" },
+
+      # Macro to list available HTML tags.
+      '@ALLOWED_HTML_TAGS' => join( ", ", @allowed_tags ),
+  );
+
+  my %config = (
+      db_type => 'SQLite',
+      db_name => './data/node.db',
+      db_user => 'not_used',
+      home_node => "Home",
+      site_name => "state51 wiki",
+      formatters => {
+                      default => [
+                                   'CGI::Wiki::Formatter::UseMod',
+                                    %formatter_conf,
+                                    macros => \%macros,
+                                 ]
+                    },
+      template_path => "./templates/",
+      search_map => "./data/search_map/",
+  );
+
+The above is not intended to exemplify good programming practice.
+
 =head1 TODO
 
 Things I still need to do
@@ -123,7 +314,7 @@ L<CGI::Wiki>
 
 =item *
 
-L<http://the.earth.li/~kake/cgi-bin/london.crafts/wiki.cgi> - a wiki for a local crafts group, running on CGI::Wiki::Kwiki
+L<http://london-crafts.org> - a wiki for a local crafts group, running on CGI::Wiki::Kwiki
 
 =back
 
@@ -133,9 +324,10 @@ Tom Insam (tom@jerakeen.org)
 
 =head1 CREDITS
 
-Thanks to Kake for writing CGI::Wiki, and providing the initial patches to
-specify store and formatter types in the config. And for complaining at me till
-I released things.
+Thanks to Kake for writing CGI::Wiki, and providing the initial
+patches to specify store and formatter types in the config. And for
+complaining at me till I released things.  Thanks to Ivor Williams for
+diff support.
 
 =head1 COPYRIGHT
 
@@ -152,9 +344,10 @@ use CGI;
 use CGI::Wiki;
 use Search::InvertedIndex;
 use CGI::Wiki::Search::SII;
+use CGI::Wiki::Plugin::Diff;
 use Template;
 
-our $VERSION = '0.44';
+our $VERSION = '0.46';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -176,6 +369,8 @@ my $default_options = {
     cgi_path => CGI::url(),
     search_map => "./search_map",
 };
+
+our $diff_plugin = CGI::Wiki::Plugin::Diff->new;
 
 sub new {
     my $class = shift;
@@ -246,6 +441,8 @@ sub new {
         search    => $self->{search},
     ) or die "Can't create CGI::Wiki object";
 
+    $self->{wiki}->register_plugin( plugin => $diff_plugin );
+
     return $self;
 }
 
@@ -313,8 +510,15 @@ sub run {
 
     } else {
 
-        if ($args{diffversion}) {
-            die "diff not implemented yet\n";
+       if ($args{diffversion}) {
+            my %diff = $diff_plugin->differences(
+            		node => $node,
+            	left_version => $args{version},
+            	right_version => $args{diffversion} );
+            $diff{ver1} = $args{version};
+            $diff{ver2} = $args{diffversion};
+	    $self->process_template('differences.tt', $node, \%diff);
+
         } else {
             $self->display_node($node, $args{version});
         }

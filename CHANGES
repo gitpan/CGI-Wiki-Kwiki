@@ -1,3 +1,17 @@
+             ******************* NOTE TO UPGRADERS ************************
+             **  If you are upgrading from a version earlier than 0.45,  **
+             **  please make sure that you install the new difference.tt **
+             **  template.  It can be found in the templates/ directory  **
+             **  of the tarball.                                         **
+             **************************************************************
+
+2003/12/10 - (0.46) Fixup Build.PL - we don't *really* depend on CGI::Kwiki
+             Loads more docs (thanks Schuyler for the prod).  Few fixes to
+             the diff thing.
+
+.......... - (0.45) (not released) Ivor Williams' patches to make diffs work.
+             CGI::Wiki::Plugin::Diff is now a prerequisite.
+
 2003/11/24 - (0.44) Added ability to specify hostname of database server,
              requested by Jody Belka.  db_user no longer required for
              SQLite backend.
