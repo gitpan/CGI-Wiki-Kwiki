@@ -1,4 +1,6 @@
 2003/09/22 - (0.31) Tidied up the tests - IO::Stringy no longer needed.
+             (0.32) Fixed small bug previously masked by unnecessary
+             'use CGI qw( :standard )' line in CGI::Wiki, removed in 0.48.
 
 2003/08/28 - (0.3) Added username/comment support.  Added a start at tests.
              Added support for the 'userstats' action.

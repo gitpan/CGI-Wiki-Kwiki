@@ -105,7 +105,7 @@ use Search::InvertedIndex;
 use CGI::Wiki::Search::SII;
 use Template;
 
-our $VERSION = '0.31';
+our $VERSION = '0.32';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -393,7 +393,7 @@ sub process_template {
 
     # Create Template object, print CGI header, process template.
     my $tt = Template->new( \%tt_conf );
-    my $output = CGI::header;
+    my $output = CGI::header();
 
     die $tt->error
         unless ( $tt->process( $template, \%tt_vars, \$output ) );
