@@ -1,10 +1,13 @@
-2003/07/12 - Initial release
+2003/09/22 - (0.31) Tidied up the tests - IO::Stringy no longer needed.
 
-2003/07/13 - (0.1) Cleaned up some docs, added ability to revert to a previous
-             page version. Bumped to 0.1 because I'm in a good mood.
+2003/08/28 - (0.3) Added username/comment support.  Added a start at tests.
+             Added support for the 'userstats' action.
 
 2003/07/18 - (0.2) Added search, using Search::InvertedIndex
              (0.21) ..and added the new template to the MANIFEST. Oops.
 
-           - (0.3) Added username/comment support.  Added a start at tests.
-             Added support for the 'userstats' action.
+2003/07/13 - (0.1) Cleaned up some docs, added ability to revert to a previous
+             page version. Bumped to 0.1 because I'm in a good mood.
+
+2003/07/12 - Initial release
+

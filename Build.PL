@@ -16,7 +16,6 @@ my $build = Module::Build->new(
     recommends => {
         'DBD::SQLite' => 0, # for testing
         'DBI'         => 0, # for testing
-        'IO::Stringy' => 0, # for testing
     },
     build_requires => {
         'Test::More' => 0,

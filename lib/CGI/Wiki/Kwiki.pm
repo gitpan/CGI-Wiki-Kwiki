@@ -2,14 +2,16 @@ package CGI::Wiki::Kwiki;
 
 =head1 NAME
 
-CGI::Wiki::Kwiki
+CGI::Wiki::Kwiki - An instant wiki built on CGI::Wiki.
 
 =head1 DESCRIPTION
 
-A simple front-end to CGI::Wiki, including import capability from CGI::Kwiki,
-designed as a transition module from a CGI::Kwiki wiki to something a little
-more powerful. It provides most of the methods you'd expect from a wiki -
-change control and listing, conflict management, database backends, etc.
+A simple-to-use front-end to L<CGI::Wiki>.  It can be used for several
+purposes: to migrate from a L<CGI::Kwiki> wiki (its original purpose),
+to provide a quickly set up wiki that can later be extended to use
+more of CGI::Wiki's capabilities, and so on.  It uses the L<Template>
+Toolkit to allow quick and easy customisation of your wiki's look
+without you needing to dive into the code.
 
 =head1 METHODS
 
@@ -17,9 +19,9 @@ change control and listing, conflict management, database backends, etc.
 
 =item B<new>
 
-Creates a new CGI::Wiki::Kwiki object. Expects some options, most have defaults,
-a few are required. Here's how you'd call the constructor - all values here are
-defaults, the values you must provide are marked.
+Creates a new CGI::Wiki::Kwiki object. Expects some options, most have
+defaults, a few are required. Here's how you'd call the constructor -
+all values here are defaults, the values you must provide are marked.
 
     my $wiki = CGI::Wiki::Kwiki->new(
         db_type => 'MySQL',
@@ -74,7 +76,7 @@ Things I still need to do
 
 =head1 SEE ALSO
 
-CGI::Wiki
+L<CGI::Wiki>
 
 =head1 AUTHOR
 
@@ -103,7 +105,7 @@ use Search::InvertedIndex;
 use CGI::Wiki::Search::SII;
 use Template;
 
-our $VERSION = '0.3';
+our $VERSION = '0.31';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -181,6 +183,8 @@ sub new {
 
 sub run {
     my ($self, %args) = @_;
+    $self->{return_tt_vars} = delete $args{return_tt_vars} || 0;
+    $self->{return_output}  = delete $args{return_output}  || 0;
     my ($node, $action) = @args{'node', 'action'};
     my $metadata = { username  => $args{username},
                      comment   => $args{comment},
@@ -381,15 +385,20 @@ sub process_template {
         $tt_vars{node_param} = CGI::escape($node);
     }
 
+    if ( $self->{return_tt_vars} ) {
+        return %tt_vars;
+    }
+
     my %tt_conf = ( %$conf, INCLUDE_PATH => $self->{template_path} );
 
     # Create Template object, print CGI header, process template.
     my $tt = Template->new( \%tt_conf );
-    print CGI::header;
+    my $output = CGI::header;
 
     die $tt->error
-        unless ( $tt->process( $template, \%tt_vars ) );
-
+        unless ( $tt->process( $template, \%tt_vars, \$output ) );
+    return $output if $self->{return_output};
+    print $output;
 }
 
 sub commit_node {
