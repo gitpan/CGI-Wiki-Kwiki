@@ -347,7 +347,7 @@ use CGI::Wiki::Search::SII;
 use CGI::Wiki::Plugin::Diff;
 use Template;
 
-our $VERSION = '0.46';
+our $VERSION = '0.47';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -698,8 +698,7 @@ sub commit_node {
                                              $metadata );
 
     if ($written) {
-        $self->display_node($node);
-
+        $self->redirect_to_node($node) unless $self->{return_output};
     } else {
         my %node_data = $self->{wiki}->retrieve_node($node);
         my ( $stored, $checksum ) = @node_data{qw( content checksum )};

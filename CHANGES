@@ -1,3 +1,7 @@
+2003/12/22 - (0.47) After committing an edit we now redirect to the edited
+             page rather than just calling the display method in order that
+             the URL our browser is pointing at is correct and complete.
+
              ******************* NOTE TO UPGRADERS ************************
              **  If you are upgrading from a version earlier than 0.45,  **
              **  please make sure that you install the new difference.tt **
