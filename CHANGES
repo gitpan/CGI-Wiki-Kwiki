@@ -1,3 +1,16 @@
+             ******************* NOTE TO UPGRADERS ************************
+             **  If you are upgrading from a version earlier than 0.48,  **
+             **  please make sure that you install the updated templates **
+             **  found in the templates/ directory of the tarball.       **
+             **    Added:   preferences.tt                               **
+             **    Changed: navbar.tt                                    **
+             **************************************************************
+
+2003/01/06 - (0.48) Moved the button-press munging out of the CGI and into
+             the module, where it belongs.  Improved calling syntax of
+             ->process_template.  Added preferences facility for saving
+             username.
+
 2003/12/22 - (0.47) After committing an edit we now redirect to the edited
              page rather than just calling the display method in order that
              the URL our browser is pointing at is correct and complete.

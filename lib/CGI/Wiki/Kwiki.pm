@@ -29,19 +29,7 @@ without you needing to dive into the code.
                   },
   );
 
-  # The following tweaking should make its way out of wiki.cgi and
-  # into the module...
-
   my %vars = CGI::Vars();
-
-  # certain actions are the result of button presses.
-  $vars{action} = 'commit' if $vars{commit};
-  $vars{action} = 'preview' if $vars{preview};
-  $vars{action} = 'search' if $vars{search};
-
-  # It's possible to pass the node name in more than one way.
-  $vars{node} ||= CGI::param('keywords');
-
   eval {
       CGI::Wiki::Kwiki->new(%config)->run(%vars);
   };
@@ -341,13 +329,14 @@ under the same terms as Perl itself.
 use strict;
 use warnings;
 use CGI;
+use CGI::Cookie;
 use CGI::Wiki;
 use Search::InvertedIndex;
 use CGI::Wiki::Search::SII;
 use CGI::Wiki::Plugin::Diff;
 use Template;
 
-our $VERSION = '0.47';
+our $VERSION = '0.48';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -450,6 +439,15 @@ sub run {
     my ($self, %args) = @_;
     $self->{return_tt_vars} = delete $args{return_tt_vars} || 0;
     $self->{return_output}  = delete $args{return_output}  || 0;
+
+    # certain actions are the result of button presses.
+    $args{action} = 'commit'  if $args{commit};
+    $args{action} = 'preview' if $args{preview};
+    $args{action} = 'search'  if $args{search};
+
+    # It's possible to pass the node name in more than one way.
+    $args{node} ||= CGI::param('keywords');
+
     my ($node, $action) = @args{'node', 'action'};
     my $metadata = { username  => $args{username},
                      comment   => $args{comment},
@@ -462,29 +460,33 @@ sub run {
         if ($action eq 'commit') {
             $self->commit_node($node, $args{content}, $args{checksum},
                                $metadata);
-    
+
         } elsif ($action eq 'preview') {
             $self->preview_node($node, $args{content}, $args{checksum},
                                 $metadata);
-    
+
         } elsif ($action eq 'edit') {
             $self->edit_node($node, $args{version});
-    
+
         } elsif ($action eq 'revert') {
             $self->revert_node($node, $args{version});
-    
+
         } elsif ($action eq 'index') {
             my @nodes = sort $self->{wiki}->list_all_nodes();
-            $self->process_template( "site_index.tt", "index", { nodes => \@nodes, not_editable => 1 } );
-    
+            $self->process_template(
+                template => "site_index.tt",
+                node     => "index",
+                vars     => { nodes => \@nodes, not_editable => 1 },
+            );
+
         } elsif ($action eq 'show_backlinks') {
             $self->show_backlinks($node);
-    
+
         } elsif ($action eq 'random') {
             my @nodes = $self->{wiki}->list_all_nodes();
             $node = $nodes[int(rand(scalar(@nodes) + 1)) + 1];
             $self->redirect_to_node($node);
-    
+
         } elsif ($action eq 'list_all_versions') {
             $self->list_all_versions($node);
 
@@ -494,7 +496,7 @@ sub run {
         } elsif ($action eq 'search_index') {
             $|++;
             print "Content-type: text/plain\n\n";
-            for ($self->{wiki}->list_all_nodes()) {            
+            for ($self->{wiki}->list_all_nodes()) {
                 print "Indexing $_\n";
                 my $node = $self->{wiki}->retrieve_node($_);
                 $self->{wiki}->search_obj()->index_node($_, $node);
@@ -504,6 +506,12 @@ sub run {
 
         } elsif ($action eq 'userstats') {
             $self->do_userstats( %args );
+        } elsif ( $action eq 'preferences' ) {
+            if ( $args{set} ) {
+                $self->set_preferences( %args );
+	    } else {
+                $self->show_preferences_form;
+            }
         } else {
             die "Bad action\n";
         }
@@ -512,12 +520,16 @@ sub run {
 
        if ($args{diffversion}) {
             my %diff = $diff_plugin->differences(
-            		node => $node,
-            	left_version => $args{version},
-            	right_version => $args{diffversion} );
+                        node  => $node,
+                left_version  => $args{version},
+                right_version => $args{diffversion} );
             $diff{ver1} = $args{version};
             $diff{ver2} = $args{diffversion};
-	    $self->process_template('differences.tt', $node, \%diff);
+            $self->process_template(
+                template => "differences.tt",
+                node     => $node,
+                vars     => \%diff,
+            );
 
         } else {
             $self->display_node($node, $args{version});
@@ -542,7 +554,7 @@ sub display_node {
     my %node_data = $self->{wiki}->retrieve_node( %criteria );
     my $raw = $node_data{content};
     my $content = $self->{wiki}->format($raw, $node_data{metadata});
-    
+
     my %tt_vars = (
         content    => $content,
         node_name  => CGI::escapeHTML($node),
@@ -570,7 +582,11 @@ sub display_node {
                      days           => 7,
                      not_editable   => 1,
                    );
-        $self->process_template( "recent_changes.tt", $node, \%tt_vars );
+        $self->process_template(
+            template => "recent_changes.tt",
+            node     => $node,
+            vars     => \%tt_vars,
+        );
 
     } elsif ( $node eq "WantedPages" ) {
         my @dangling = $self->{wiki}->list_dangling_links;
@@ -584,10 +600,18 @@ sub display_node {
 
         $tt_vars{wanted} = \@dangling;
         $tt_vars{not_editable} = 1;
-        $self->process_template( "wanted_pages.tt", $node, \%tt_vars );
+        $self->process_template(
+            template => "wanted_pages.tt",
+            node     => $node,
+            vars     => \%tt_vars,
+        );
 
     } else {
-        $self->process_template( "node.tt", $node, \%tt_vars );
+        $self->process_template(
+            template => "node.tt",
+            node     => $node,
+            vars     => \%tt_vars,
+        );
     }
 }
 
@@ -606,7 +630,11 @@ sub preview_node {
             map { $_ => CGI::escapeHTML($metadata->{$_}||"") } keys %$metadata,
         );
 
-        $self->process_template( "edit_form.tt", $node, \%tt_vars );
+        $self->process_template(
+            template => "edit_form.tt",
+            node     => $node,
+            vars     => \%tt_vars,
+        );
 
     } else {
         my %node_data = $self->{wiki}->retrieve_node($node);
@@ -620,7 +648,11 @@ sub preview_node {
             formatter_labels => \@formatter_labels,
             map { $_ => CGI::escapeHTML($metadata->{$_}||"") } keys %$metadata,
         );
-        $self->process_template( "edit_conflict.tt", $node, \%tt_vars );
+        $self->process_template(
+           template => "edit_conflict.tt",
+           node     => $node,
+           vars     => \%tt_vars,
+        );
     }
 }
 
@@ -640,22 +672,32 @@ sub edit_node {
 
     my @formatter_labels = sort keys %{ $self->{formatters} };
 
+    my %prefs_data = $self->get_prefs_from_cookie;
+    my $username = $prefs_data{username};
+
     my %tt_vars = (
         content          => CGI::escapeHTML($content),
         checksum         => CGI::escapeHTML($checksum),
         version          => $version,
         formatter_labels => \@formatter_labels,
-	formatter        => CGI::escapeHTML($data{metadata}{formatter}[0]||""),
+        formatter        => CGI::escapeHTML($data{metadata}{formatter}[0]||""),
+        username         => $username,
                   );
 
-    $self->process_template( "edit_form.tt", $node, \%tt_vars );
+    $self->process_template(
+        template => "edit_form.tt",
+        node     => $node,
+        vars     => \%tt_vars,
+    );
 }
 
 sub process_template {
-    my ($self, $template, $node, $vars, $conf) = @_;
+    my ($self, %args) = @_;
+    my $template = $args{template};
+    my $node = $args{node};
 
-    $vars ||= {};
-    $conf ||= {};
+    my $vars = $args{vars} || {};
+    my $conf = $args{conf} || {};
 
     my %tt_vars = (
         %$vars,
@@ -683,7 +725,7 @@ sub process_template {
 
     # Create Template object, print CGI header, process template.
     my $tt = Template->new( \%tt_conf );
-    my $output = CGI::header();
+    my $output = CGI::header( -cookie => $args{cookies} );
 
     die $tt->error
         unless ( $tt->process( $template, \%tt_vars, \$output ) );
@@ -708,7 +750,11 @@ sub commit_node {
             stored      => CGI::escapeHTML($stored),
             map { $_ => CGI::escapeHTML($metadata->{$_}||"") } keys %$metadata,
         );
-        $self->process_template( "edit_conflict.tt", $node, \%tt_vars );
+        $self->process_template(
+            template => "edit_conflict.tt",
+            node     => $node,
+            vars     => \%tt_vars,
+        );
     }
 }
 
@@ -740,7 +786,10 @@ sub do_search {
         }
     } @sorted;
     my %tt_vars = ( results => \@results );
-    $self->process_template( "search_results.tt", "", \%tt_vars );
+    $self->process_template(
+        template => "search_results.tt",
+        vars     => \%tt_vars
+    );
 }
 
 sub redirect_to_node {
@@ -776,7 +825,11 @@ sub list_all_versions {
         history      => \@history,
         not_editable => 1,
     );
-    $self->process_template("node_history.tt", $node, \%tt_vars );
+    $self->process_template(
+        template => "node_history.tt",
+        node     => $node,
+        vars     => \%tt_vars,
+    );
 }
 
 sub show_backlinks {
@@ -793,7 +846,11 @@ sub show_backlinks {
                     num_results  => scalar @results,
                     not_editable => 1 );
 
-    $self->process_template("backlink_results.tt", $node, \%tt_vars);
+    $self->process_template(
+        template => "backlink_results.tt",
+        node     => $node,
+        vars     => \%tt_vars,
+    );
 }
 
 sub search {
@@ -808,9 +865,10 @@ sub search {
                     search => $search,
                     not_editable => 1 );
 
-    $self->process_template("search_results.tt", undef, \%tt_vars);
-    
-    
+    $self->process_template(
+        template => "search_results.tt",
+        vars     => \%tt_vars,
+    );
 }
 
 sub do_userstats {
@@ -825,14 +883,69 @@ sub do_userstats {
     @nodes = map {
         {
           name          => CGI::escapeHTML($_->{name}),
-	  last_modified => CGI::escapeHTML($_->{last_modified}),
+          last_modified => CGI::escapeHTML($_->{last_modified}),
           comment       => CGI::escapeHTML($_->{metadata}{comment}[0]),
           url           => $self->{cgi_path} . "?node=" . CGI::escape($_->{name}),
         }
                  } @nodes;
     my %tt_vars = ( nodes        => \@nodes,
-		    username     => CGI::escapeHTML($username),
+                    username     => CGI::escapeHTML($username),
                     not_editable => 1,
                   );
-    $self->process_template("userstats.tt", undef, \%tt_vars);
+    $self->process_template(
+        template => "userstats.tt",
+        vars     => \%tt_vars,
+    );
 }
+
+sub show_preferences_form {
+    my $self = shift;
+    # Get defaults for form fields from cookie.
+    my %prefs = $self->get_prefs_from_cookie;
+    $self->process_template(
+        template => "preferences.tt",
+        vars     => {
+                      %prefs,
+                      show_prefs_form => 1,
+                      not_editable    => 1,
+                    },
+    );
+}
+
+sub get_prefs_from_cookie {
+    my $self = shift;
+    my %cookies = CGI::Cookie->fetch;
+    my $cookie_name = $self->prefs_cookie_name;
+    my %data;
+    if ( $cookies{$cookie_name} ) {
+        %data = $cookies{$cookie_name}->value; # call ->value in list context
+      }
+    return ( username => $data{username} || "",
+           );
+}
+
+sub set_preferences {
+    my ($self, %args) = @_;
+    my $cookie_name = $self->prefs_cookie_name;
+    my $cookie = CGI::Cookie->new(
+        -name    => $cookie_name,
+        -value   => {
+                      username => $args{username},
+                    },
+        -expires => "+1M",
+    );
+    $self->process_template(
+        template => "preferences.tt",
+        vars     => {
+                      not_editable => 1,
+                    },
+        cookies  => $cookie,
+    );
+}
+
+sub prefs_cookie_name {
+    my $self = shift;
+    return $self->{site_name} . "_userprefs";
+}
+
+1;

@@ -1,7 +1,8 @@
 <p align="right">
   [<a class="menu" href="[% cgi_url %]?node=RecentChanges">Recent Changes</a>]
+  [<a class="menu" href="[% cgi_url %]?action=preferences">Preferences</a>]
   [<a class="menu" href="[% cgi_url %]?action=random">Random Page</a>]
-  [<a class="menu" href="[% cgi_url %]?node=WantedPages">Wanted pages</a>]
+  [<a class="menu" href="[% cgi_url %]?node=WantedPages">Wanted Pages</a>]
   [<a class="menu" href="[% cgi_url %]?action=index">All Pages</a>]
   [<a class="menu" href="[% home_link %]">[% home_name %]</a>]
 </p>
