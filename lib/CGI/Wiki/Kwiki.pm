@@ -355,7 +355,7 @@ use CGI::Wiki::Plugin::Diff;
 use Template;
 use Algorithm::Merge qw(merge);
 
-our $VERSION = '0.58';
+our $VERSION = '0.59';
 
 my $default_options = {
     db_type => 'MySQL',
