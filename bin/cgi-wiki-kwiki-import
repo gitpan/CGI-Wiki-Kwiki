@@ -153,6 +153,7 @@ closedir(DIR);
 
 my %seen;
 for my $node (@database) {
+  eval {
     print "Importing $node\n";
 
     if ($seen{lc($node)}++) {
@@ -226,6 +227,11 @@ for my $node (@database) {
             {  formatter => 'Kwiki', }
         ) or warn "Failed to write node\n";
     }
+  };
+  if ($@) {
+    warn "FATAL ERROR IMPORTING NODE $node: $@\n";
+    warn "Trying to continue..\n";
+  }
 }
 print "Done.\n";
 

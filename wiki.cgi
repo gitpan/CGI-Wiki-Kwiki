@@ -1,6 +1,8 @@
 #!/usr/bin/perl -w
 use strict;
 use warnings;
+use lib qw(lib);
+
 use CGI;
 use CGI::Wiki::Kwiki;
 

@@ -42,12 +42,16 @@ without you needing to dive into the code.
       print STDERR $@;
   }
 
-(B<Note:> In that script and in the following, replace
+In the following directions, we use "webserver" to mean the user that
+your webserver executes CGI scripts as.  Often this is actually you
+yourself; sometimes it is "www-data" or "apache".  If you don't know,
+ask your ISP.
+
+In the script above and in the following, replace
 C</home/wiki/data/node.db> with a filename in a directory that you
-will be able to make readable and writeable by the user that your
-webserver runs as.  SQLite requires access to both the file (for
-writing data) and the directory it resides in (for creating a
-lockfile).)
+will be able to make readable and writeable by the webserver.  SQLite
+requires access to both the file (for writing data) and the directory
+it resides in (for creating a lockfile).
 
 The above is a complete and absolutely minimal wiki CGI script.  To
 make it work as-is:
@@ -119,11 +123,12 @@ you must provide are marked.
                       },                  # example only, not default
         site_name => 'CGI::Wiki::Kwiki site',
         admin_email => 'email@invalid',
-        template_path => undef,               # required
+        template_path => './templates',
         stylesheet_url => "",
         home_node => 'HomePage',
         cgi_path => CGI::url(),
         search_map => './search_map',
+        prefs_expire => '+1M',    # passed to CGI::Cookie; see its docs
     );
 
 The C<db_type> parameter refers to a CGI::Wiki::Store::[type] class.
@@ -274,7 +279,7 @@ accidentally gets a useful idea from it.
                                     macros => \%macros,
                                  ]
                     },
-      template_path => "./templates/",
+      template_path => "templates/",
       search_map => "./data/search_map/",
   );
 
@@ -290,6 +295,7 @@ Things I still need to do
 
 =item Import script should catch case-sensitive dupes better
 
+=item CGI::Wiki::Kwiki does not currently work under mod_perl. This is a serious problem.
 =back
 
 =head1 SEE ALSO
@@ -306,9 +312,10 @@ L<http://london-crafts.org> - a wiki for a local crafts group, running on CGI::W
 
 =back
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 Tom Insam (tom@jerakeen.org)
+Kake Pugh (kake@earth.li)
 
 =head1 CREDITS
 
@@ -335,8 +342,9 @@ use Search::InvertedIndex;
 use CGI::Wiki::Search::SII;
 use CGI::Wiki::Plugin::Diff;
 use Template;
+use Algorithm::Merge qw(merge);
 
-our $VERSION = '0.48';
+our $VERSION = '0.49';
 
 my $default_options = {
     db_type => 'MySQL',
@@ -352,11 +360,12 @@ my $default_options = {
                   },
     site_name => 'CGI::Wiki::Kwiki site',
     admin_email => 'email@invalid',
-    template_path => undef,
+    template_path => './templates',
     stylesheet_url => "",
     home_node => 'HomePage',
     cgi_path => CGI::url(),
     search_map => "./search_map",
+    prefs_expire => '+1M',
 };
 
 our $diff_plugin = CGI::Wiki::Plugin::Diff->new;
@@ -459,7 +468,7 @@ sub run {
 
         if ($action eq 'commit') {
             $self->commit_node($node, $args{content}, $args{checksum},
-                               $metadata);
+                               $args{version}, $metadata);
 
         } elsif ($action eq 'preview') {
             $self->preview_node($node, $args{content}, $args{checksum},
@@ -660,13 +669,9 @@ sub edit_node {
     my ($self, $node, $version) = @_;
 
     my %data = $self->{wiki}->retrieve_node($node);
+    $version ||= $data{version};
 
-    my $current_version = $data{version};
-    undef $version if ($version && $version == $current_version);
-
-    my %criteria = ( name => $node );
-    $criteria{version} = $version if $version;
-
+    my %criteria = ( name => $node, version => $version );
     my %node_data = $self->{wiki}->retrieve_node( %criteria );
     my ( $content, $checksum ) = @node_data{qw( content checksum )};
 
@@ -682,7 +687,7 @@ sub edit_node {
         formatter_labels => \@formatter_labels,
         formatter        => CGI::escapeHTML($data{metadata}{formatter}[0]||""),
         username         => $username,
-                  );
+    );
 
     $self->process_template(
         template => "edit_form.tt",
@@ -734,7 +739,7 @@ sub process_template {
 }
 
 sub commit_node {
-    my ($self, $node, $content, $checksum, $metadata) = @_;
+    my ($self, $node, $content, $checksum, $ancestor, $metadata) = @_;
 
     my $written = $self->{wiki}->write_node( $node, $content, $checksum,
                                              $metadata );
@@ -742,12 +747,41 @@ sub commit_node {
     if ($written) {
         $self->redirect_to_node($node) unless $self->{return_output};
     } else {
-        my %node_data = $self->{wiki}->retrieve_node($node);
+        # We assume this means that we have an edit
+        # conflict. If we can merge the changes, do so.
+
+        # Get the version of the node that the changes were based on
+        my %criteria = ( name => $node, version => $ancestor );
+        my %node_data = $self->{wiki}->retrieve_node(%criteria);
+        my $original = $node_data{content};
+
+        # Get the current version of the node
+        %node_data = $self->{wiki}->retrieve_node($node);
         my ( $stored, $checksum ) = @node_data{qw( content checksum )};
+
+        my $conflicts;
+        my $resolved = merge(
+          [ split(/\n/, $original) ],
+          [ split(/\n/, $stored) ],
+          [ split(/\n/, $content) ],
+          { CONFLICT => sub {
+            my ($left, $right) = @_;
+            $conflicts++;
+            return  q{<!-- --- Page currently contains -->},
+                    (@$left),
+                    q{<!-- --- Your version -->},
+                    (@$right),
+                    q{<!-- --- -->};
+          } }
+        );
+        $resolved = join("\n", @$resolved);
+        print STDERR "Conflicts found!\n$resolved\n" if $conflicts;;
+
         my %tt_vars = (
             checksum    => CGI::escapeHTML($checksum),
-            new_content => CGI::escapeHTML($content),
+            new_content => CGI::escapeHTML($resolved),
             stored      => CGI::escapeHTML($stored),
+            conflicts => $conflicts,
             map { $_ => CGI::escapeHTML($metadata->{$_}||"") } keys %$metadata,
         );
         $self->process_template(
@@ -926,14 +960,7 @@ sub get_prefs_from_cookie {
 
 sub set_preferences {
     my ($self, %args) = @_;
-    my $cookie_name = $self->prefs_cookie_name;
-    my $cookie = CGI::Cookie->new(
-        -name    => $cookie_name,
-        -value   => {
-                      username => $args{username},
-                    },
-        -expires => "+1M",
-    );
+    my $cookie = $self->make_prefs_cookie( %args );
     $self->process_template(
         template => "preferences.tt",
         vars     => {
@@ -941,6 +968,24 @@ sub set_preferences {
                     },
         cookies  => $cookie,
     );
+}
+
+sub make_prefs_cookie {
+    my ($self, %args) = @_;
+    my $cookie_name = $self->prefs_cookie_name;
+    my $cookie = CGI::Cookie->new(
+        -name    => $cookie_name,
+        -value   => {
+                      username => $args{username},
+                    },
+        -expires => $self->prefs_expire,
+    );
+    return $cookie;
+}
+
+sub prefs_expire {
+    my $self = shift;
+    return $self->{prefs_expire};
 }
 
 sub prefs_cookie_name {

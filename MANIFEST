@@ -33,6 +33,7 @@ t/04_multiple_formatter_options.t
 t/05_store_formatter_option.t
 t/06_single_formatter.t
 t/07_diffs.t
+t/08_preferences.t
 t/lib/Local/Test/Formatter/Buffy.pm
 t/lib/Local/Test/Formatter/Pie.pm
 t/lib/Local/Test/Formatter/Pony.pm

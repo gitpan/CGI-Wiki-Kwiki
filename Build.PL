@@ -11,6 +11,7 @@ my $build = Module::Build->new(
         'Getopt::Long' => 0,
         'Time::Piece' => 0,
         'Search::InvertedIndex' => 0,
+        'Algorithm::Merge' => 0,
     },
     recommends => {
         'CGI::Wiki::Formatter::Multiple' => 0,# if you want multiple formatters

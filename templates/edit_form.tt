@@ -8,6 +8,7 @@
 [% INCLUDE change_info_boxes.tt %]
 [% INCLUDE formatter_box.tt %]
 <input type="hidden" name="node" value="[% node_name %]">
+<input type="hidden" name="version" value="[% version %]">
 <input type="hidden" name="checksum" value="[% checksum %]" />
 <input type="submit" name="preview" value="preview" />
 <input type="submit" name="commit" value="commit" />

@@ -1,3 +1,7 @@
+2004/06/02 - (0.49) Documentation tweaks, added a default template_path
+             of './templates'.  New 'prefs_expire' option to let you decide
+             when preferences cookie will expire.
+
              ******************* NOTE TO UPGRADERS ************************
              **  If you are upgrading from a version earlier than 0.48,  **
              **  please make sure that you install the updated templates **
@@ -6,7 +10,7 @@
              **    Changed: navbar.tt                                    **
              **************************************************************
 
-2003/01/06 - (0.48) Moved the button-press munging out of the CGI and into
+2004/01/06 - (0.48) Moved the button-press munging out of the CGI and into
              the module, where it belongs.  Improved calling syntax of
              ->process_template.  Added preferences facility for saving
              username.

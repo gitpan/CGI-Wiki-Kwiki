@@ -1,9 +1,10 @@
 --- #YAML:1.0
 name: CGI-Wiki-Kwiki
-version: 0.48
+version: 0.49
 license: perl
 distribution_type: module
 requires:
+  Algorithm::Merge: 0
   CGI: 0
   CGI::Wiki: 0.05
   CGI::Wiki::Plugin::Diff: 0
@@ -24,5 +25,5 @@ conflicts: {}
 provides:
   CGI::Wiki::Kwiki:
     file: lib/CGI/Wiki/Kwiki.pm
-    version: 0.48
+    version: 0.49
 generated_by: Module::Build version 0.20
